@@ -2,12 +2,19 @@
   "name": "exam-buddy",
   "version": "1.0.0",
   "type": "module",
-  "main": "client/src/index.js",
+  "main": "server/start.js",
   "scripts": {
-    "start": "node server/index.js",
+    "start": "NODE_ENV=production node server/start.js",
+    "dev": "NODE_ENV=development nodemon server/start.js",
     "client": "cd client && npm start",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "nodemon server/index.js"
+    "dev:all": "concurrently \"npm run dev\" \"npm run client\"",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit",
+    "test:watch": "npm run test -- --watch",
+    "test:coverage": "npm run test -- --coverage",
+    "seed": "node server/scripts/seed.js",
+    "clean": "node server/scripts/clean.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.23.1",
