@@ -4,7 +4,7 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Box } from '@mui/material'; // Keep Box for potential layout use within routes
 
 // Common Components
-import { ProtectedRoute } from '../components/common/ProtectedRoute'; // Assuming this exists and handles roles
+import ProtectedRoute from '../components/common/ProtectedRoute'; // Changed to default import
 import MainLayout from '../layouts/MainLayout'; // Conceptual: To be created
 import AuthLayout from '../layouts/AuthLayout'; // Conceptual: To be created
 
@@ -16,7 +16,7 @@ import ResetPasswordPage from "../pages/ResetPasswordPage"; // Added
 import VerifyEmailPage from "../pages/VerifyEmailPage"; // Added
 import SplashScreen from "../pages/SplashScreen"; // Added
 import DashboardPage from "../pages/DashboardPage";
-import AdminDashboardPage from "../pages/AdminDashboardPage"; // Renamed import for consistency
+import AdminDashboardPage from "../pages/admin/AdminDashboard.jsx"; // Corrected path and filename
 // import ExamManagerDashboardPage from '../pages/ExamManagerDashboardPage'; // Add if needed
 import ExamInstructionsPage from "../pages/ExamInstructionsPage";
 // import NotFoundPage from '../pages/NotFoundPage'; // Good practice to have a 404 page
