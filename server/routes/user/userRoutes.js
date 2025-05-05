@@ -2,6 +2,8 @@ import express from 'express';
 import { 
   registerUser,
   loginUser,
+  forgotPassword,
+  resetPassword,
   getUserProfile, 
   updateUserProfile 
 } from '../../controllers/userController.js';
@@ -12,6 +14,8 @@ const router = express.Router();
 // Public Routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 
 // Protected Routes
 router.route('/profile')

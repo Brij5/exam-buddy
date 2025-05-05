@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -92,6 +93,24 @@ userSchema.pre('save', async function (next) {
 // Method: Compare entered password to hashed password in database
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Method: Generate and hash password reset token
+userSchema.methods.getResetPasswordToken = function () {
+  // Generate token
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to passwordResetToken field
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set expire time (e.g., 10 minutes)
+  this.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 mins
+
+  // Return the unhashed token (to be sent to the user, e.g., via email)
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);

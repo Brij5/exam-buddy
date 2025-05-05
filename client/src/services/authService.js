@@ -113,5 +113,35 @@ export const authService = {
         error.toString();
       throw new Error(message);
     }
+  },
+
+  // Request password reset
+  requestPasswordReset: async (email) => {
+    try {
+      const response = await axios.post(`${USERS_API_URL}/forgot-password`, { email });
+      // Return success message or data for the slice
+      return response.data;
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      throw new Error(message);
+    }
+  },
+
+  // Reset password using token
+  resetPassword: async (token, password) => {
+    try {
+      const response = await axios.post(`${USERS_API_URL}/reset-password/${token}`, { password });
+      // Return success message or data for the slice
+      return response.data;
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      throw new Error(message);
+    }
   }
 };

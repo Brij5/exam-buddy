@@ -1,6 +1,10 @@
 import User from '../models/User.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import generateToken from '../utils/generateToken.js';
+import crypto from 'crypto'; // Need crypto for resetPassword
+// TODO: Import email sending utility if implementing email sending
+// import sendEmail from '../utils/sendEmail'; 
+import config from '../config/config.js'; // For client URL
 
 // @desc    Register a new user (Student role only)
 // @route   POST /api/users/register
@@ -142,4 +146,108 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('User not found');
   }
+});
+
+// @desc    Forgot password - Generate token
+// @route   POST /api/users/forgot-password
+// @access  Public
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    res.status(400);
+    throw new Error('Please provide an email address');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    // Important: Don't reveal if the user exists or not for security
+    // Send a generic success response even if email not found
+    return res.status(200).json({ 
+      success: true, 
+      message: 'If an account with that email exists, a password reset link has been sent.' 
+    });
+  }
+
+  // Generate reset token (unhashed version)
+  const resetToken = user.getResetPasswordToken();
+
+  // Save the hashed token and expiry date to the user document
+  await user.save({ validateBeforeSave: false }); // Skip validation to only update token fields
+
+  // Construct reset URL
+  // Note: In a real app, send this via email. For now, we might log it or send in response for testing.
+  const resetUrl = `${config.clientUrl}/reset-password/${resetToken}`;
+
+  const message = `You are receiving this because you (or someone else) requested the reset of a password. Please make a POST request to: \n\n ${resetUrl}`; // Example message
+
+  try {
+    // Placeholder for email sending logic
+    // await sendEmail({ email: user.email, subject: 'Password Reset Token', message });
+    console.log('Password Reset URL (for testing):', resetUrl); // Log for testing
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'If an account with that email exists, a password reset link has been sent.' 
+      // data: resetUrl // Optional: Send URL in response only for testing/debugging
+    });
+  } catch (err) {
+    console.error('Error in forgotPassword (maybe email sending): ', err);
+    // Clear the token fields if email sending fails
+    user.passwordResetToken = undefined;
+    user.passwordResetTokenExpiry = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(500);
+    throw new Error('There was an error processing your request. Please try again.'); // Generic error
+  }
+});
+
+// @desc    Reset password using token
+// @route   POST /api/users/reset-password/:token
+// @access  Public
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+  const resetToken = req.params.token;
+
+  if (!password || !resetToken) {
+    res.status(400);
+    throw new Error('Please provide a new password and the reset token');
+  }
+
+  // Hash the token from the URL params to match the one stored in the DB
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Find user by the hashed token and check if token is not expired
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetTokenExpiry: { $gt: Date.now() }, // Check expiry
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Invalid or expired reset token');
+  }
+
+  // Set new password (pre-save hook will hash it)
+  user.password = password;
+  // Clear the reset token fields
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExpiry = undefined;
+
+  // Save the updated user document (runs password hashing)
+  await user.save();
+
+  // Optional: Generate a new login token immediately (or force re-login)
+  // const token = generateToken(user._id, user.role);
+
+  res.status(200).json({ 
+    success: true, 
+    message: 'Password reset successful. You can now log in with your new password.' 
+    // token: token // Include if auto-logging in
+  });
 });
