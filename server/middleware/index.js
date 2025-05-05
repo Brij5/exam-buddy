@@ -3,14 +3,14 @@ import * as auth from './auth';
 import * as error from './error';
 import * as validation from './validation';
 
-export {
-  auth,
-  error,
-  validation
-};
+// Export all middleware as named exports
+export { auth, error, validation };
 
-export default {
+// Export all middleware as default export
+const middleware = {
   ...auth,
   ...error,
-  ...validation
+  ...validation,
 };
+
+export default middleware;

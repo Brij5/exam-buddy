@@ -1,65 +1,134 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
-import dotenv from 'dotenv';
+import { promisify } from 'util';
+import User from '../../models/User.js';
+import { logger } from '../../utils/logger.js';
+import { ApiError } from '../../utils/ApiError.js';
+import config from '../../config/config.js';
 
-// Load env vars specifically needed here
-dotenv.config({ path: './server/.env' });
+// Promisify jwt.verify
+const verifyToken = promisify(jwt.verify);
 
-const protect = async (req, res, next) => {
-  let token;
+/**
+ * Protect routes - verify JWT token
+ */
+export const protect = async (req, res, next) => {
+  try {
+    let token;
 
-  // Check for token in Authorization header (Bearer token)
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      // Get token from header (split 'Bearer TOKEN' and take the TOKEN part)
+    // 1) Check if token exists in headers
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      // Get token from header
       token = req.headers.authorization.split(' ')[1];
-
-      // Verify token
-      if (!process.env.JWT_SECRET) {
-        console.error('FATAL ERROR: JWT_SECRET is not defined.');
-        return res.status(500).json({ message: 'Server configuration error' });
-      }
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Get user from the token payload (id) and attach to request
-      // Exclude password field from being attached
-      req.user = await User.findById(decoded.id).select('-password');
-
-      if (!req.user) {
-        // Handle case where user might have been deleted after token was issued
-        return res.status(401).json({ message: 'Not authorized, user not found' });
-      }
-
-      next(); // Proceed to the next middleware or route handler
-    } catch (error) {
-      console.error('Token verification failed:', error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
+    } else if (req.cookies.jwt) {
+      // Get token from cookie
+      token = req.cookies.jwt;
     }
-  } else {
-    // If no token is found in the header
-    res.status(401).json({ message: 'Not authorized, no token' });
-  }
-};
 
-// Optional: Middleware for admin authorization
-const admin = (req, res, next) => {
-  if (req.user && req.user.role === 'Admin') {
+    if (!token) {
+      throw new ApiError(401, 'You are not logged in! Please log in to get access.');
+    }
+
+    // 2) Verify token
+    const decoded = await verifyToken(token, config.jwt.secret);
+
+    // 3) Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      throw new ApiError(401, 'The user belonging to this token no longer exists.');
+    }
+
+    // 4) Check if user changed password after the token was issued
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      throw new ApiError(401, 'User recently changed password! Please log in again.');
+    }
+
+    // 5) Grant access to protected route
+    req.user = currentUser;
+    res.locals.user = currentUser; // Make user available in templates
     next();
-  } else {
-    res.status(403).json({ message: 'Not authorized as an admin' }); // 403 Forbidden
+  } catch (error) {
+    logger.error(`Authentication error: ${error.message}`, {
+      error,
+      url: req.originalUrl,
+    });
+    next(error);
   }
 };
 
-// Optional: Middleware for exam manager authorization
-const examManager = (req, res, next) => {
-    if (req.user && (req.user.role === 'ExamManager' || req.user.role === 'Admin')) { // Admin can also manage exams
-        next();
-    } else {
-        res.status(403).json({ message: 'Not authorized as an exam manager or admin' });
+/**
+ * Restrict routes to specific roles
+ * @param {...String} roles - Allowed roles
+ */
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      throw new ApiError(
+        403,
+        'You do not have permission to perform this action'
+      );
     }
+    next();
+  };
 };
 
-export { protect, admin, examManager };
+/**
+ * Middleware for admin authorization
+ */
+export const admin = restrictTo('Admin');
+
+/**
+ * Middleware for exam manager authorization
+ */
+export const examManager = restrictTo('Admin', 'ExamManager');
+
+/**
+ * Check if user is logged in (for frontend)
+ */
+export const isLoggedIn = async (req, res, next) => {
+  try {
+    if (req.cookies.jwt) {
+      // 1) Verify token
+      const decoded = await verifyToken(req.cookies.jwt, config.jwt.secret);
+
+      // 2) Check if user still exists
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) return next();
+
+      // 3) Check if user changed password after the token was issued
+      if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      // There is a logged in user
+      res.locals.user = currentUser;
+    }
+    next();
+  } catch (err) {
+    next();
+  }
+};
+
+/**
+ * Middleware to check if email is verified
+ */
+export const isVerified = (req, res, next) => {
+  if (!req.user.isVerified) {
+    throw new ApiError(
+      403,
+      'Please verify your email address to access this resource'
+    );
+  }
+  next();
+};
+
+export default {
+  protect,
+  admin,
+  examManager,
+  isLoggedIn,
+  isVerified,
+  restrictTo,
+};

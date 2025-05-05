@@ -1,0 +1,56 @@
+services:
+  js-client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: js-client
+    restart: unless-stopped
+    init: true
+    # env_file: ./client/.env  # Uncomment if .env file exists
+    ports:
+      - "5173:5173"  # Vite preview server
+    networks:
+      - exam-buddy-net
+    depends_on:
+      - js-server
+
+  js-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: js-server
+    restart: unless-stopped
+    init: true
+    env_file: ./server/.env
+    ports:
+      - "5000:5000"  # Express API server
+    networks:
+      - exam-buddy-net
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"  # Expose for local development
+    networks:
+      - exam-buddy-net
+    # Uncomment the following to persist MongoDB data
+    # volumes:
+    #   - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  exam-buddy-net:
+    driver: bridge
+
+# Uncomment the following if you want to persist MongoDB data
+#volumes:
+#  mongo-data:
+#    driver: local

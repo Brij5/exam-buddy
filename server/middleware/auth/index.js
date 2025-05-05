@@ -1,8 +1,14 @@
-import { protect, admin, examManager } from './authMiddleware.js';
+import authMiddleware from './authMiddleware.js';
 
-export { protect, admin, examManager };
-export default {
+// Export all middleware functions
+export const {
   protect,
   admin,
-  examManager
-};
+  examManager,
+  isLoggedIn,
+  isVerified,
+  restrictTo,
+} = authMiddleware;
+
+// Export default for backward compatibility
+export default authMiddleware;

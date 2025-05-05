@@ -1,5 +1,6 @@
 import { logger } from '../../utils/logger.js';
 import { ApiError } from '../../utils/ApiError.js';
+import config from '../../config/config.js';
 
 /**
  * Middleware to handle 404 Not Found errors
@@ -8,8 +9,19 @@ import { ApiError } from '../../utils/ApiError.js';
  * @param {Function} next - Express next function
  */
 const notFound = (req, res, next) => {
-  const error = new ApiError(404, `Not Found - ${req.originalUrl}`);
-  next(error);
+  next(new ApiError(404, `Not Found - ${req.originalUrl}`));
+};
+
+/**
+ * Handle errors for API routes that don't exist
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const apiNotFound = (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API endpoint ${req.originalUrl} not found`,
+  });
 };
 
 /**
@@ -24,14 +36,22 @@ const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
   let errors = [];
+  let stack = {};
 
-  // Log the error
-  logger.error(err.message, {
+  // In development, send error stack trace
+  if (config.env === 'development') {
+    stack = { stack: err.stack };
+  }
+
+  // Log the error with additional context
+  logger.error(message, {
     statusCode,
-    stack: err.stack,
     url: req.originalUrl,
     method: req.method,
-    body: req.body,
+    ip: req.ip,
+    user: req.user ? req.user.id : 'unauthenticated',
+    ...(err.errors && { validationErrors: err.errors }),
+    ...stack,
   });
 
   // Handle specific error types
@@ -42,13 +62,34 @@ const errorHandler = (err, req, res, next) => {
   } else if (err.code === 11000) {
     // Mongoose duplicate key
     statusCode = 400;
-    const field = Object.keys(err.keyValue)[0];
+    const field = Object.keys(err.keyValue || {})[0] || 'field';
     message = `Duplicate field value: ${field}`;
-    errors = [{ field, message }];
+    errors = [{ field, message: `This ${field} is already in use` }];
   } else if (err.name === 'ValidationError') {
     // Mongoose validation error
     statusCode = 400;
     message = 'Validation failed';
+    errors = Object.values(err.errors).map((e) => ({
+      field: e.path,
+      message: e.message,
+    }));
+  } else if (err.name === 'JsonWebTokenError') {
+    // JWT error
+    statusCode = 401;
+    message = 'Invalid token. Please log in again!';
+  } else if (err.name === 'TokenExpiredError') {
+    // JWT expired
+    statusCode = 401;
+    message = 'Your token has expired! Please log in again.';
+  } else if (err.name === 'MongoServerError') {
+    // Other MongoDB errors
+    statusCode = 500;
+    message = 'Database operation failed';
+  } else if (err.name === 'RateLimitExceeded') {
+    // Rate limiter error
+    statusCode = 429;
+    message = 'Too many requests, please try again later';
+  }
     errors = Object.values(err.errors).map((e) => ({
       field: e.path,
       message: e.message,

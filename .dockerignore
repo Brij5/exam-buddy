@@ -1,0 +1,82 @@
+# Node.js dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Test and coverage artifacts
+test/
+tests/
+**/test/
+**/tests/
+coverage/
+*.log
+npm-debug.log
+yarn-debug.log
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Version control
+.git/
+.gitignore
+.hg/
+.svn/
+
+# Environment and secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+
+# Temporary and local files
+tmp/
+temp/
+*.tmp
+.local/
+local/
+
+# Documentation and markdown
+*.md
+README*
+DEVELOPMENT_LOG.md
+PROJECT_REQUIREMENTS.md
+
+# Docker and compose files
+.dockerignore
+.dockerignore.*
+Dockerfile*
+docker-compose*
+
+# Backup files
+*.bak
+
+# Project-specific patterns
+public/
+assets/
+
+# Exclude example env file (keep for reference)
+!.env.example
+
+# Exclude client and server Dockerfiles (keep for build)
+!client/Dockerfile
+!server/Dockerfile
+
+# Exclude package.json and package-lock.json (keep for build)
+!client/package.json
+!server/package.json
+
+# Exclude public/index.html (keep for build)
+!client/public/index.html
