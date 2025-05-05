@@ -32,101 +32,114 @@ const generateHashToken = () => {
 
 // --- Controller Functions ---
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
-const registerUser = async (req, res) => {
+/**
+ * @desc    Register a new user
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
+const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  try {
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Generate verification token
-    const { token, hashedToken, expiry } = generateHashToken();
-
-    // Create user (password hashing is handled by pre-save hook in model)
-    const user = await User.create({
-      name,
-      email,
-      password, // Pass plain password, model will hash it
-      verificationToken: hashedToken,
-      verificationTokenExpiry: expiry,
-    });
-
-    // Prepare verification email
-    const verificationUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${token}`; // Adjust frontend URL later
-    const message = `Please verify your email by clicking on the following link: \n\n ${verificationUrl} \n\n This link will expire in 10 minutes.`;
-
-    // Send verification email (simulation)
-    await sendEmail({
-      to: user.email,
-      subject: 'Exam Buddy - Email Verification',
-      text: message,
-    });
-
-    res.status(201).json({
-      message: 'Registration successful. Please check your email to verify your account.',
-      // Optionally return limited user info if needed, but usually not needed here
-    });
-
-  } catch (error) {
-    console.error('Registration Error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+  // Check if user already exists
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    throw new ApiError(400, 'User with this email already exists');
   }
-};
 
-// @desc    Authenticate user & get token
-// @route   POST /api/auth/login
-// @access  Public
-const loginUser = async (req, res) => {
+  // Generate verification token
+  const { token, hashedToken, expiry } = generateHashToken();
+
+  // Create user (password hashing is handled by pre-save hook in model)
+  const user = await User.create({
+    name,
+    email,
+    password,
+    verificationToken: hashedToken,
+    verificationTokenExpiry: expiry,
+  });
+
+  // Prepare verification email
+  const verificationUrl = `${app.clientUrl}/verify-email/${token}`;
+  const message = `Please verify your email by clicking on the following link: \n\n ${verificationUrl} \n\n This link will expire in 10 minutes.`;
+
+  // Send verification email
+  await sendEmail({
+    to: user.email,
+    subject: 'Exam Buddy - Email Verification',
+    text: message,
+  });
+
+  res.status(201).json({
+    success: true,
+    message: 'Registration successful. Please check your email to verify your account.',
+  });
+});
+
+/**
+ * @desc    Authenticate user & get token
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
+const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    // Find user by email, include password field for comparison
-    const user = await User.findOne({ email }).select('+password');
+  // Check if email and password are provided
+  if (!email || !password) {
+    throw new ApiError(400, 'Please provide email and password');
+  }
 
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+  // Find user by email, include password field for comparison
+  const user = await User.findOne({ email }).select('+password');
 
-    // Check if password matches
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      // Increment failed attempts (consider locking later)
+  // Check if user exists and password matches
+  if (!user || !(await user.matchPassword(password))) {
+    if (user) {
+      // Increment failed login attempts
       user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
       await user.save({ validateBeforeSave: false });
-      return res.status(401).json({ message: 'Invalid credentials' });
     }
+    throw new ApiError(401, 'Invalid email or password');
+  }
 
-    // Check if user is verified
-    if (!user.isVerified) {
-       return res.status(401).json({ message: 'Please verify your email before logging in.' });
-    }
+  // Check if email is verified
+  if (!user.isVerified) {
+    throw new ApiError(403, 'Please verify your email before logging in');
+  }
 
-    // Reset failed attempts on successful login
-    user.failedLoginAttempts = 0;
-    user.lastLogin = Date.now();
-    await user.save({ validateBeforeSave: false });
+  // Reset failed attempts and update last login
+  user.failedLoginAttempts = 0;
+  user.lastLogin = Date.now();
+  await user.save({ validateBeforeSave: false });
 
-    // Generate token and return user info (excluding sensitive fields)
-    res.json({
+  // Generate token
+  const token = generateToken(user._id);
+
+  // Set cookie options
+  const cookieOptions = {
+    expires: new Date(Date.now() + jwtConfig.cookieExpiresIn * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  };
+
+  // Send token in cookie and response
+  res.cookie('jwt', token, cookieOptions);
+
+  // Remove password from output
+  user.password = undefined;
+
+  res.status(200).json({
+    success: true,
+    token,
+    user: {
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
       profilePictureUrl: user.profilePictureUrl,
-      token: generateToken(user._id),
-    });
-
-  } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ message: 'Server error during login' });
-  }
-};
+    },
+  });
+});
 
 // @desc    Verify user email
 // @route   GET /api/auth/verify-email/:token
