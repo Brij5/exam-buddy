@@ -1,41 +1,40 @@
-# syntax=docker/dockerfile:1
+# Build stage
+FROM node:18-alpine AS builder
 
-ARG NODE_VERSION=22.13.1
-
-# --- Build Stage ---
-FROM node:${NODE_VERSION}-slim AS builder
 WORKDIR /app
 
-# Install dependencies (npm ci for deterministic builds)
-COPY --link package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci
+# Install dependencies
+COPY package*.json ./
+RUN npm ci
 
-# Copy the rest of the application source
-COPY --link . .
+# Copy source code
+COPY . .
 
-# Build the production-ready static files
+
+# Build the application
 RUN npm run build
 
-# --- Production Stage ---
-FROM node:${NODE_VERSION}-slim AS final
-WORKDIR /app
+# Production stage
+FROM nginx:alpine
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 appgroup && \
-    adduser --system --uid 1001 --ingroup appgroup appuser
+# Copy built assets from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy only the built app and minimal files needed to serve
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
+# Copy nginx config
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 
-ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Copy SSL certificates
+COPY docker/nginx/ssl /etc/nginx/ssl
 
-USER appuser
+# Create necessary directories
+RUN mkdir -p /var/log/nginx/ && \
+    touch /var/log/nginx/access.log && \
+    touch /var/log/nginx/error.log && \
+    chmod -R 755 /var/log/nginx/
 
-EXPOSE 5173
+# Expose ports
+EXPOSE 80 443
 
-# Use Vite's preview server for production preview
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]

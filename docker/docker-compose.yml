@@ -1,0 +1,90 @@
+version: '3.8'
+
+networks:
+  exam-buddy-net:
+    driver: bridge
+
+services:
+  # Frontend Service
+  frontend:
+    build:
+      context: ../client
+      dockerfile: Dockerfile
+    container_name: exam-buddy-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - exam-buddy-net
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://backend:5000/api
+    depends_on:
+      - backend
+    volumes:
+      - ../client:/app
+      - /app/node_modules
+
+  # Backend Service
+  backend:
+    build:
+      context: ../server
+      dockerfile: docker/server/Dockerfile
+    container_name: exam-buddy-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    networks:
+      - exam-buddy-net
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017/exam-buddy-dev
+      - JWT_SECRET=your_jwt_secret_development
+    depends_on:
+      - mongo
+    volumes:
+      - ../server:/app
+      - /app/node_modules
+
+  # MongoDB Service
+  mongo:
+    image: mongo:6.0
+    container_name: exam-buddy-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    networks:
+      - exam-buddy-net
+    environment:
+      - MONGO_INITDB_DATABASE=exam-buddy-dev
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nginx Service (for production)
+  nginx:
+    image: nginx:alpine
+    container_name: exam-buddy-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - exam-buddy-net
+
+# Volumes for persistent data
+volumes:
+  mongo-data:
+    driver: local

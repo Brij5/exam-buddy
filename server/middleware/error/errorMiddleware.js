@@ -43,17 +43,6 @@ const errorHandler = (err, req, res, next) => {
     stack = { stack: err.stack };
   }
 
-  // Log the error with additional context
-  logger.error(message, {
-    statusCode,
-    url: req.originalUrl,
-    method: req.method,
-    ip: req.ip,
-    user: req.user ? req.user.id : 'unauthenticated',
-    ...(err.errors && { validationErrors: err.errors }),
-    ...stack,
-  });
-
   // Handle specific error types
   if (err.name === 'CastError' && err.kind === 'ObjectId') {
     // Mongoose bad ObjectId
@@ -90,15 +79,6 @@ const errorHandler = (err, req, res, next) => {
     statusCode = 429;
     message = 'Too many requests, please try again later';
   }
-    errors = Object.values(err.errors).map((e) => ({
-      field: e.path,
-      message: e.message,
-    }));
-  } else if (err.name === 'JsonWebTokenError') {
-    // JWT error
-    statusCode = 401;
-    message = 'Invalid token';
-  } else if (err.name === 'TokenExpiredError') {
     // JWT expired
     statusCode = 401;
     message = 'Token expired';

@@ -5,8 +5,12 @@ import examRoutes from './exam';
 import progressRoutes from './progress';
 import adminRoutes from './admin';
 import userRoutes from './user';
+import healthRoutes from './health';
 
 const router = express.Router();
+
+// Health check route
+router.use('/health', healthRoutes);
 
 // API routes
 router.use('/auth', authRoutes);
