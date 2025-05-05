@@ -2,6 +2,66 @@ import User from '../models/User.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import generateToken from '../utils/generateToken.js';
 
+// @desc    Register a new user (Student role only)
+// @route   POST /api/users/register
+// @access  Public
+export const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+
+  // Basic validation
+  if (!name || !email || !password) {
+    res.status(400);
+    throw new Error('Please provide name, email, and password');
+  }
+
+  // Check if user already exists
+  const userExists = await User.findOne({ email });
+
+  if (userExists) {
+    res.status(400); // Bad Request
+    throw new Error('User already exists with this email');
+  }
+
+  // Create new user (role defaults to 'Student' based on schema)
+  const user = await User.create({
+    name,
+    email,
+    password, // Password will be hashed by the pre-save hook
+    // role: 'Student' // Explicitly setting, though schema default handles it
+  });
+
+  if (user) {
+    // Decide response: 
+    // Option 1: Just send success message (user needs to verify/login separately)
+    res.status(201).json({ 
+      success: true,
+      message: 'Registration successful. Please log in.' // Or: Please check your email to verify.
+    });
+
+    // Option 2: Return basic user info (excluding sensitive data like password hash)
+    // res.status(201).json({
+    //   _id: user._id,
+    //   name: user.name,
+    //   email: user.email,
+    //   role: user.role,
+    // });
+
+    // Option 3: Log user in immediately (less common if verification is needed)
+    // const token = generateToken(user._id, user.role);
+    // res.status(201).json({
+    //   _id: user._id,
+    //   name: user.name,
+    //   email: user.email,
+    //   role: user.role,
+    //   token: token
+    // });
+
+  } else {
+    res.status(400); // Bad Request
+    throw new Error('Invalid user data');
+  }
+});
+
 // @desc    Auth user & get token
 // @route   POST /api/users/login
 // @access  Public

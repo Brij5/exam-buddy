@@ -15,6 +15,13 @@ const users = [
     role: 'Student', // Default, but explicitly set here
     isVerified: true // Assume student is pre-verified for testing ease
   },
+  {
+    name: 'Exam Manager User',
+    email: 'manager@example.com',
+    password: 'password123',
+    role: 'ExamManager',
+    isVerified: true // Assume manager is pre-verified
+  },
   // Add more users as needed
 ];
 

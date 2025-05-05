@@ -3,8 +3,8 @@ import axios from 'axios';
 // Define the base URL for the API. Adjust if your backend runs on a different port/URL.
 // Consider using environment variables for this in a real application.
 // Using relative URL, assumes frontend/backend on same origin or proxy configured
-const USERS_API_URL = '/api/users'; // Base URL for user endpoints (login, profile)
-const AUTH_API_URL = '/api/auth'; // Base URL for other auth endpoints (register, refresh, logout)
+const USERS_API_URL = '/api/users'; // Base URL for user endpoints (login, profile, register)
+const AUTH_API_URL = '/api/auth'; // Base URL for other auth endpoints (refresh, logout - if they exist)
 
 // Auth service
 export const authService = {
@@ -32,8 +32,8 @@ export const authService = {
   // Register user
   register: async (userData) => { // Updated signature to accept userData object
     try {
-      // Assuming registration stays under /api/auth for now, adjust if needed
-      const response = await axios.post(`${AUTH_API_URL}/register`, userData);
+      // Corrected endpoint to use USERS_API_URL
+      const response = await axios.post(`${USERS_API_URL}/register`, userData);
       // Registration might just return a success message or minimal data
       return response.data; 
       // Removed localStorage logic
