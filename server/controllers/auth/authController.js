@@ -141,117 +141,150 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Verify user email
-// @route   GET /api/auth/verify-email/:token
-// @access  Public
-const verifyEmail = async (req, res) => {
-  try {
-    // Hash the token from the params
-    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+/**
+ * @desc    Verify user email
+ * @route   GET /api/auth/verify-email/:token
+ * @access  Public
+ */
+const verifyEmail = asyncHandler(async (req, res) => {
+  // Hash the token from the params
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
 
-    // Find user by hashed token and check expiry
-    const user = await User.findOne({
-      verificationToken: hashedToken,
-      verificationTokenExpiry: { $gt: Date.now() },
-    });
+  // Find user by hashed token and check expiry
+  const user = await User.findOne({
+    verificationToken: hashedToken,
+    verificationTokenExpiry: { $gt: Date.now() },
+  });
 
-    if (!user) {
-      return res.status(400).send('<h1>Email Verification Failed</h1><p>Invalid or expired verification link.</p>'); // Simple HTML response
-    }
-
-    // Update user verification status
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    user.verificationTokenExpiry = undefined;
-    await user.save({ validateBeforeSave: false });
-
-    res.status(200).send('<h1>Email Verified Successfully</h1><p>You can now log in to your Exam Buddy account.</p>'); // Simple HTML response
-
-  } catch (error) {
-    console.error('Email Verification Error:', error);
-    res.status(500).send('<h1>Server Error</h1><p>Could not verify email. Please try again later.</p>');
+  if (!user) {
+    // Redirect to frontend with error message
+    return res.redirect(
+      `${app.clientUrl}/verify-email?success=false&message=Invalid or expired verification link`
+    );
   }
-};
 
-// @desc    Request password reset
-// @route   POST /api/auth/forgot-password
-// @access  Public
-const forgotPassword = async (req, res) => {
+  // Update user verification status
+  user.isVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpiry = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  // Redirect to frontend with success message
+  res.redirect(
+    `${app.clientUrl}/verify-email?success=true&message=Email verified successfully`
+  );
+});
+
+/**
+ * @desc    Request password reset
+ * @route   POST /api/auth/forgot-password
+ * @access  Public
+ */
+const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
+  // 1) Get user based on POSTed email
+  const user = await User.findOne({ email });
+  if (!user) {
+    // For security reasons, don't reveal if the email exists or not
+    return res.status(200).json({
+      success: true,
+      message: 'If an account with that email exists, a password reset link has been sent.',
+    });
+  }
+
+  // 2) Generate the random reset token
+  const { token, hashedToken, expiry } = generateHashToken();
+
+  // 3) Save the encrypted token and expiry to the database
+  user.passwordResetToken = hashedToken;
+  user.passwordResetExpires = expiry;
+  await user.save({ validateBeforeSave: false });
+
   try {
-    const user = await User.findOne({ email });
+    // 4) Send it to user's email
+    const resetURL = `${app.clientUrl}/reset-password/${token}`;
+    
+    const message = `Forgot your password? Submit a PATCH request with your new password to: \n\n${resetURL}\n\nIf you didn't forget your password, please ignore this email!`;
 
-    if (!user) {
-      // Important: Don't reveal if the user exists or not for security
-      return res.status(200).json({ message: 'If an account with that email exists, a password reset link has been sent.' });
-    }
+    await sendEmail({
+      email: user.email,
+      subject: 'Your password reset token (valid for 10 min)',
+      message,
+    });
 
-    // Generate reset token
-    const { token, hashedToken, expiry } = generateHashToken();
-
-    user.passwordResetToken = hashedToken;
-    user.passwordResetTokenExpiry = expiry;
+    res.status(200).json({
+      success: true,
+      message: 'Token sent to email!',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
-    // Prepare password reset email
-    const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${token}`; // Adjust frontend URL later
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please click on the following link, or paste this into your browser to complete the process: \n\n ${resetUrl} \n\n This link will expire in 10 minutes. \n\nIf you did not request this, please ignore this email and your password will remain unchanged.`;
-
-    // Send password reset email (simulation)
-    await sendEmail({
-      to: user.email,
-      subject: 'Exam Buddy - Password Reset Request',
-      text: message,
-    });
-
-    res.status(200).json({ message: 'If an account with that email exists, a password reset link has been sent.' });
-
-  } catch (error) {
-    console.error('Forgot Password Error:', error);
-    // Avoid specific error messages here too
-    res.status(500).json({ message: 'Error processing request' });
+    throw new ApiError(
+      500,
+      'There was an error sending the email. Try again later!'
+    );
   }
-};
+});
 
-// @desc    Reset password using token
-// @route   POST /api/auth/reset-password/:token
-// @access  Public
-const resetPassword = async (req, res) => {
-  const { password } = req.body;
+/**
+ * @desc    Reset password using token
+ * @route   POST /api/auth/reset-password/:token
+ * @access  Public
+ */
+const resetPassword = asyncHandler(async (req, res) => {
+  // 1) Get user based on the token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
 
-  try {
-    // Hash the token from the params
-    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
 
-    // Find user by hashed token and check expiry
-    const user = await User.findOne({
-      passwordResetToken: hashedToken,
-      passwordResetTokenExpiry: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired reset token' });
-    }
-
-    // Set new password (pre-save hook will hash it)
-    user.password = password;
-    user.passwordResetToken = undefined;
-    user.passwordResetTokenExpiry = undefined;
-    // Maybe force re-verification or notify user of password change?
-    await user.save(); // Let validation run here
-
-    // Maybe log the user in automatically or just confirm success
-    res.status(200).json({ message: 'Password reset successful' });
-
-  } catch (error) {
-    console.error('Reset Password Error:', error);
-    if (error.name === 'ValidationError') {
-       return res.status(400).json({ message: `Validation Error: ${error.message}` });
-    }
-    res.status(500).json({ message: 'Error resetting password' });
+  // 2) If token has not expired, and there is user, set the new password
+  if (!user) {
+    throw new ApiError(400, 'Token is invalid or has expired');
   }
-};
+
+  // 3) Update password and clear reset token fields
+  user.password = req.body.password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  // 4) Log the user in, send JWT
+  const token = generateToken(user._id);
+  
+  // Set cookie options
+  const cookieOptions = {
+    expires: new Date(Date.now() + jwtConfig.cookieExpiresIn * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  };
+
+  // Send token in cookie and response
+  res.cookie('jwt', token, cookieOptions);
+
+  // Remove password from output
+  user.password = undefined;
+
+  res.status(200).json({
+    success: true,
+    token,
+    data: {
+      user,
+    },
+  });
+});
 
 export {
   registerUser,
