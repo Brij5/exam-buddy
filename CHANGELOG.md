@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned up `docker/` directory, removing potentially redundant files/folders.
 - Added a Documentation section to `README.md` linking to files within `docs/`.
 - Added Frontend Implementation Plan section to `docs/DEVELOPMENT_LOG.md`.
+- Refactored frontend routing: Centralized routes in `routes/index.jsx`, simplified `App.jsx`, created placeholder layout components.
+- Refactored RegisterPage to use Material UI components.
 
 ### Fixed
 - Fixed environment variable loading
