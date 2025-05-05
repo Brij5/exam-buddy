@@ -1,48 +1,42 @@
-# Build stage
-FROM node:18-alpine AS builder
-
+# Base image for installing all dependencies
+FROM node:20-alpine AS deps
 WORKDIR /app
-
-# Install build dependencies
 COPY package*.json ./
 RUN npm ci
 
-# Copy source code
+# Builder stage for application code
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Install production dependencies only
-RUN npm prune --production
-
 # Production stage
-FROM node:18-alpine
-
+FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Copy built node modules and source code
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/ ./
-
-# Create necessary directories
-RUN mkdir -p /app/uploads && \
-    chown -R appuser:appgroup /app
-
-# Set environment variables
-ENV NODE_ENV=production
+ENV NODE_ENV production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Set working directory and user
-WORKDIR /app
+# Create non-root user
+RUN addgroup -S --gid 1001 appgroup && \
+    adduser -S --uid 1001 -G appgroup appuser
+
+# Copy necessary files from builder
+COPY --from=builder --chown=appuser:appgroup /app/package*.json ./
+COPY --from=builder --chown=appuser:appgroup /app/node_modules ./node_modules
+COPY --from=builder --chown=appuser:appgroup /app/ ./
+
+# Create uploads directory (if needed by the app)
+RUN mkdir -p uploads && \
+    chown -R appuser:appgroup /app
+
 USER appuser
 
 # Expose port
 EXPOSE 5000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
   CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1
 
 # Start the application

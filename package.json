@@ -6,37 +6,20 @@
   "scripts": {
     "start": "NODE_ENV=production node server/start.js",
     "dev": "NODE_ENV=development nodemon server/start.js",
-    "client": "cd client && npm start",
-    "dev:all": "concurrently \"npm run dev\" \"npm run client\"",
+    "client:dev": "npm run dev --prefix client",
+    "dev:all": "concurrently \"npm run dev\" \"npm run client:dev\"",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
-    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit",
-    "test:watch": "npm run test -- --watch",
-    "test:coverage": "npm run test -- --coverage",
-    "seed": "node server/scripts/seed.js",
+    "seed": "node server/scripts/seeder.js",
     "clean": "node server/scripts/clean.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-navigation/native": "^6.0.0",
     "@react-navigation/stack": "^6.0.0",
-    "bcryptjs": "^2.4.3",
-    "cloudinary": "^1.37.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "exceljs": "^4.3.0",
     "expo": "~52.0.37",
     "expo-document-picker": "^12.0.0",
     "expo-status-bar": "~2.0.1",
-    "express": "^4.18.2",
-    "express-mongo-sanitize": "^2.2.0",
-    "express-validator": "^7.0.1",
-    "firebase": "^10.0.0",
-    "firebase-admin": "^11.11.0",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.3",
-    "multer": "^1.4.5-lts.1",
     "react": "18.3.1",
     "react-native": "0.76.7",
     "react-native-document-picker": "9.3.1",
@@ -44,10 +27,7 @@
     "react-native-paper": "^5.13.1",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
-    "react-native-vector-icons": "^10.2.0",
-    "winston": "^3.17.0",
-    "xlsx": "0.18.5",
-    "xss-clean": "^0.1.4"
+    "react-native-vector-icons": "^10.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -61,9 +41,6 @@
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false,
         "exclude": [
-          "exceljs",
-          "firebase",
-          "firebase-admin",
           "react-native-document-picker"
         ]
       }

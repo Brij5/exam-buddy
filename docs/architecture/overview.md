@@ -2,130 +2,116 @@
 
 ## System Architecture
 
-Exam Buddy follows a modern, modular architecture with clear separation of concerns:
+Exam Buddy follows a modular architecture separating frontend clients (Web and Mobile) from the backend API and database.
 
+```mermaid
+graph LR
+    UserWeb[Web User (Browser)] --> ClientWeb(Client - React/Vite);
+    UserMobile[Mobile User (Expo App)] --> ClientMobile(Client - React Native/Expo);
+    
+    ClientWeb --> Nginx(Nginx - Prod Only);
+    Nginx --> Backend(Backend - Node/Express API);
+    ClientMobile --> Backend;
+    
+    Backend --> Database[(Database - MongoDB)];
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│                 │     │                 │     │                 │
-│   Frontend      │◄───►│    Backend      │◄───►│   Database      │
-│   (React)       │     │   (Node.js)     │     │   (MongoDB)     │
-│                 │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-       ▲                                                    
-       │                                                    
-       ▼                                                    
-┌─────────────────┐                                         
-│                 │                                         
-│    User         │                                         
-│    (Browser)    │                                         
-│                 │                                         
-└─────────────────┘                                         
-```
-
+*(Note: In development, ClientWeb often connects directly to Backend)*
 
 ## Technology Stack
 
-### Frontend
-- **Framework**: React 18
-- **State Management**: Redux Toolkit
-- **UI Library**: Material-UI
+*(Based on current setup and refined requirements)*
+
+### Mobile Client
+- **Framework:** React Native (with Expo managed workflow)
+- **UI Library:** TBD (e.g., React Native Paper)
+- **Navigation:** React Navigation
+- **State Management:** TBD
+
+### Web Client
+- **Framework**: React (with Vite bundler)
+- **UI Library**: TBD (e.g., Material-UI, Mantine)
 - **Routing**: React Router v6
-- **HTTP Client**: Axios
-- **Form Handling**: Formik & Yup
-- **Testing**: Jest & React Testing Library
+- **State Management**: TBD
+- **HTTP Client**: Axios or Fetch API
 
 ### Backend
-- **Runtime**: Node.js
+- **Runtime**: Node.js (v20+)
 - **Framework**: Express.js
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT & OAuth 2.0
-- **API Documentation**: Swagger/OpenAPI
-- **Testing**: Jest & Supertest
+- **Database**: MongoDB (with Mongoose ODM)
+- **Authentication**: JWT (Access/Refresh Tokens)
+- **API Documentation**: To Be Implemented (Recommend OpenAPI/Swagger)
+- **File Storage**: Cloudinary / AWS S3 (via Multer)
+- **Logging**: Winston
 
 ### DevOps
 - **Containerization**: Docker
-- **Orchestration**: Docker Compose
-- **CI/CD**: GitHub Actions
-- **Monitoring**: To be implemented
+- **Orchestration**: Docker Compose (`dev` and `prod` configurations)
+- **Web Server (Prod):** Nginx
+- **CI/CD**: TBD (e.g., GitHub Actions)
+- **Monitoring**: TBD
 
 ## Directory Structure
 
-### Frontend Structure
-```
-client/
-├── public/           # Static files
-└── src/
-    ├── assets/       # Images, fonts, etc.
-    ├── components/   # Reusable UI components
-    │   ├── common/   # Common components (buttons, inputs, etc.)
-    │   ├── layout/   # Layout components
-    │   └── shared/   # Shared components across features
-    ├── features/     # Feature-based modules
-    │   ├── auth/     # Authentication feature
-    │   ├── exams/    # Exams feature
-    │   └── profile/  # User profile feature
-    ├── hooks/        # Custom React hooks
-    ├── services/     # API service layer
-    ├── store/        # Redux store configuration
-    ├── styles/       # Global styles and themes
-    ├── utils/        # Utility functions
-    ├── App.jsx       # Main App component
-    └── main.jsx      # Application entry point
-```
+*(Refer to the main project README.md for the canonical high-level and detailed example structures)*
 
-### Backend Structure
-```
-server/
-├── config/         # Configuration files
-├── controllers/     # Route controllers
-├── middleware/      # Express middleware
-├── models/          # Database models
-├── routes/         # API routes
-├── services/       # Business logic
-├── utils/          # Utility functions
-├── validations/    # Request validations
-├── app.js          # Express app configuration
-└── server.js       # Server entry point
-```
+<!-- Remove outdated specific structure diagrams below if they conflict with README -->
 
 ## Data Flow
 
-1. **Authentication Flow**
-   - User submits credentials
-   - Server validates and returns JWT
-   - Token is stored in HTTP-only cookies
-   - Subsequent requests include token in Authorization header
+*(High-level examples)*
 
-2. **Exam Taking Flow**
-   - User selects an exam
-   - Questions are loaded from the server
-   - User submits answers
-   - Results are calculated and stored
-   - Performance analytics are updated
+1.  **Authentication Flow (Web/Mobile)**
+    *   User submits credentials (email/password).
+    *   Backend validates credentials, checks verification status.
+    *   If valid, backend generates JWT Access and Refresh tokens.
+    *   Tokens are sent back to the client.
+    *   Client stores tokens securely (e.g., AsyncStorage for mobile, secure storage/memory for web).
+    *   Subsequent API requests include the Access Token in the `Authorization: Bearer` header.
+    *   Backend middleware validates the token on protected routes.
+    *   Refresh token used to obtain new access tokens when expired.
+
+2.  **Exam Taking Flow (Web/Mobile)**
+    *   User selects a Mock Test.
+    *   Client requests test details and associated questions from the Backend API.
+    *   Backend retrieves test config and question data.
+    *   Client renders the Test Interface.
+    *   User submits answers periodically (auto-save) or at the end.
+    *   Backend API receives answers, updates/creates the TestAttempt record.
+    *   Upon final submission, Backend calculates score, accuracy, time, etc.
+    *   Client requests and displays the results.
 
 ## Security Considerations
 
-- All API routes are protected with JWT authentication
-- Input validation on both client and server
-- Rate limiting for API endpoints
-- CORS configuration for production
-- Secure HTTP headers with Helmet
-- Data sanitization
-- CSRF protection
+*(Refer to PROJECT_REQUIREMENTS.md for detailed requirements)*
+
+- Enforce HTTPS.
+- Secure JWT handling (short expiry for access tokens, secure storage/transport).
+- Robust input validation (client/server).
+- Protect against OWASP Top 10.
+- Role-based access control at API level.
+- Rate limiting.
+- Security headers (Helmet).
+- Regular dependency vulnerability scans.
 
 ## Performance Considerations
 
-- Client-side caching with React Query
-- Code splitting and lazy loading
-- Server-side pagination
-- Database indexing
-- Caching layer (to be implemented)
+*(Refer to PROJECT_REQUIREMENTS.md for detailed requirements)*
 
-## Future Improvements
+- Database indexing on frequently queried fields.
+- API response pagination.
+- Efficient query design.
+- Frontend code splitting / lazy loading.
+- Caching strategies (API responses, static assets).
+- Optimize image/media delivery (e.g., via Cloudinary).
 
-- Implement WebSockets for real-time features
-- Add server-side rendering (SSR)
-- Set up comprehensive monitoring
-- Implement a message queue for background jobs
-- Add support for offline mode
-- Implement a microservices architecture as the application scales
+## Architecture Decision Records (ADRs)
+
+*(Consider adding ADRs here for significant architectural choices, e.g., choice of state management library, database selection justification, etc.)*
+
+```
+docs/architecture/
+├── overview.md       # This file
+└── adrs/             # Directory for ADR markdown files
+    ├── 001-record-architecture-decisions.md
+    └── ...
+```

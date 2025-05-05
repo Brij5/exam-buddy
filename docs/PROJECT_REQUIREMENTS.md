@@ -25,11 +25,14 @@ Exam Buddy is a comprehensive mock test platform that allows multiple users to t
 ## Core Features
 
 ### 1. User Management
-- User registration and login
-- Role-based access control (Admin/User)
-- Profile management
-- Progress tracking
-- Achievement system
+- User registration (with email verification) and secure login (password hashing)
+- Enforce password complexity requirements (minimum length, character types).
+- Role-based access control (Admin/User) - Clearly defined permissions for each role.
+- User profile management (name, profile picture, password change).
+- Persistent user sessions (e.g., using JWT refresh tokens or session management).
+- Progress tracking dashboard summarizing recent activity and performance highlights.
+- (Optional) Achievement system/gamification for engagement.
+- (Optional) User feedback mechanism.
 
 ### 2. Exam Management
 - **Exam Types**: Support diverse exam categories:
@@ -41,6 +44,7 @@ Exam Buddy is a comprehensive mock test platform that allows multiple users to t
   - Example (UPSC Prelims): Paper 1 (GS), Paper 2 (CSAT)
   - Example (Banking Prelims): Section 1 (English), Section 2 (Quant), Section 3 (Reasoning)
 - **Exam Details**: Store key details for each exam/paper:
+  - Syllabus / Subject Outline reference (link or document).
   - Subjects Covered (e.g., History, Geography, Polity, Quant, Reasoning, English, Domain Specific)
   - Total Marks (e.g., 200 marks)
   - Number of Questions (e.g., 100 questions, 80 questions)
@@ -50,6 +54,8 @@ Exam Buddy is a comprehensive mock test platform that allows multiple users to t
   - Sectional Timings (Yes/No, duration per section for Banking)
   - Qualifying Papers (Yes/No, e.g., CSAT)
   - Language Options (e.g., English/Hindi)
+  - Versioning support (to track changes in exam patterns over time).
+  - Ability for Admins to clone/duplicate existing exam structures.
 
 ### 3. Mock Test Management
 - **Mock Test Types**: Create various mock test types:
@@ -62,13 +68,20 @@ Exam Buddy is a comprehensive mock test platform that allows multiple users to t
   - Adhere to Number of Questions, Marks, Duration, Negative Marking of the target exam.
   - Option to enable/disable sectional timings.
   - Difficulty level settings (Easy, Medium, Hard, Mixed).
-- **Test Interface**: Provide a realistic test-taking interface:
-  - Timer (overall and sectional if applicable)
-  - Question navigation panel (Answered, Not Answered, Marked for Review)
-  - Options for marking questions for review.
-  - Clear indication of negative marking rules.
-  - Ability to switch between languages if applicable.
+- **Test Interface**: Provide a realistic and accessible test-taking interface:
+  - Clear display of Timer (overall and sectional if applicable) with visual cues for low time.
+  - Accessible Question navigation panel showing status (Answered, Not Answered, Marked for Review, Answered & Marked for Review) allowing direct navigation.
+  - Clear options for marking questions for review (distinct from final answer submission).
+  - Explicit indication of negative marking rules on the interface.
+  - Ability to switch between available languages during the test.
+  - Auto-save progress periodically to prevent data loss.
+  - Option to pause and resume tests (if applicable based on exam rules).
+  - Review screen before final submission summarizing attempt status.
 - **Test Generation**: Generate tests from the question bank based on criteria (subject, topic, difficulty, type). Option for randomization.
+- **Test Results**: Provide immediate feedback post-submission:
+  - Score, Rank (if applicable), Percentile (if applicable).
+  - Detailed analysis: Time spent per question/section, accuracy per subject/topic/difficulty.
+  - Solution review: Ability to view correct answers, explanations, and submitted answers.
 
 ### 4. Question Management
 - **Question Types**: Support diverse question formats found in target exams:
@@ -81,6 +94,7 @@ Exam Buddy is a comprehensive mock test platform that allows multiple users to t
   - Data Interpretation based MCQs
   - (Future) Numerical Answer Type (NAT)
   - (Future) Fill in the Blanks
+  - Consider support for diagram-based or code-based questions if relevant to target exams.
 - **Question Attributes**: Store detailed attributes for each question:
   - Associated Exam(s)
   - Subject (e.g., Polity, Quantitative Aptitude)
@@ -92,63 +106,78 @@ Exam Buddy is a comprehensive mock test platform that allows multiple users to t
   - Explanation/Solution
   - Media Support (Images for DI/Geometry, Passages for RC)
   - Negative Marks applicable (override test default if needed)
+  - Question status (Draft, Needs Review, Approved, Archived).
+  - Version history for edits to questions/options/explanations.
 
 ### 5. Progress Tracking
-- Test history
-- Score trends
-- Strengths and weaknesses analysis
-- Time management analysis
-- Subject-wise performance
+- Detailed test attempt history (scores, time taken, date).
+- Visual score trends over time (line charts).
+- Strengths and weaknesses analysis based on accuracy and time taken per Subject, Topic, and Difficulty Level.
+- Time management analysis (average time per question vs. ideal time, section-wise time distribution).
+- Subject-wise and Topic-wise performance breakdown (accuracy, attempts).
+- Comparison features (e.g., comparing performance against average scores or top percentile scores for a test - anonymized).
 
 ### 6. Search and Filter
-- Exam search by type
-- Test search by subject
-- Filter by difficulty level
-- Filter by date
-- Advanced search options
+- Global search bar (exams, tests, potentially questions).
+- Filter exams by type, category, or specific attributes.
+- Filter mock tests by subject, topic, type (Full, Sectional), difficulty level, status (attempted/not attempted), date range, or tags.
+- Sort results by relevance, date, difficulty, popularity.
+- Saved searches or favorite tests functionality.
 
 ### 7. Admin Management
-- User management
-- Exam management
-- Question bank management
-- Test scheduling
-- Performance analytics
-- Content moderation
+- Centralized Admin Dashboard with key metrics (user signups, test attempts, popular exams).
+- User management (view list, search, view details, change roles, suspend/activate accounts).
+- Exam management (CRUD operations, manage structures, categories).
+- Question bank management (CRUD, bulk import/export, review/approval workflow).
+- Mock Test scheduling and configuration.
+- Performance analytics overview (platform-wide trends).
+- Content moderation tools (e.g., flagging/reviewing user-generated content if applicable in future).
+- System configuration settings (if needed).
 
 ## Technical Requirements
 
 ### Frontend
-- React (JavaScript)
-- Material-UI for UI components
-- React Router for navigation
-- Redux for state management
-- Axios for API calls
-- Toast notifications
-- Loading states
+- React (JavaScript) - Consider using TypeScript for better maintainability.
+- Modern UI library (e.g., Material-UI, Chakra UI, Mantine) for UI components and theming.
+- React Router for navigation.
+- State management library (e.g., Redux Toolkit, Zustand, Context API) chosen based on complexity.
+- Axios or Fetch API for API calls, with centralized request/response handling.
+- Form handling library (e.g., React Hook Form).
+- Toast notifications for user feedback.
+- Clear loading states and skeleton loaders for better UX.
 
 ### Backend
-- Node.js with Express.js
-- MongoDB for database
-- JWT for authentication
-- Multer for file uploads
-- Cloudinary for media storage
+- Node.js with Express.js (or potentially NestJS for more structure).
+- MongoDB with Mongoose ODM.
+- JWT for authentication (consider refresh token strategy).
+- Multer for handling file uploads.
+- Cloudinary (or similar like AWS S3) for cloud media storage.
+- Winston (or similar) for structured logging.
+- Job queue (e.g., BullMQ, Agenda) for background tasks (like sending emails).
 
 ## Database Schema
 
 ### Users Collection
 - _id
 - name
-- email
+- email (unique, indexed)
 - password (hashed)
-- role (user/admin)
-- profile_picture
-- created_at
-- updated_at
+- role (user/admin, default: user)
+- profile_picture_url
+- is_verified (Boolean, default: false)
+- verification_token
+- verification_token_expiry
+- password_reset_token
+- password_reset_token_expiry
+- last_login_at
+- failed_login_attempts (Number, default: 0)
+- created_at (timestamp)
+- updated_at (timestamp)
 
 ### Exams Collection
 - _id
-- name (e.g., 'UPSC Civil Services Prelims', 'SSC CGL Tier 1')
-- type (e.g., 'Civil Services', 'Govt Recruitment', 'University Entrance')
+- name (indexed)
+- type (indexed)
 - description
 - papers: [ 
     { 
@@ -163,72 +192,117 @@ Exam Buddy is a comprehensive mock test platform that allows multiple users to t
       language_options: [String] (e.g., ['English', 'Hindi'])
     }
   ]
-- overall_duration_minutes: Number, (if applicable, e.g., SSC CGL Tier 1)
-- has_sectional_timing: Boolean, (e.g., true for Banking Prelims)
-- created_at
-- updated_at
+- overall_duration_minutes
+- has_sectional_timing
+- version (Number, default: 1)
+- created_by (reference to Users collection, admin role)
+- updated_by (reference to Users collection, admin role)
+- created_at (timestamp)
+- updated_at (timestamp)
 
 ### Tests Collection (Mock Tests)
 - _id
-- exam_id (reference to exams collection)
-- name (e.g., 'UPSC Prelims GS Full Mock 1', 'SSC CGL Tier 1 Quant Sectional Mock 3')
-- type (e.g., 'Full Length', 'Sectional', 'Subject Wise', 'Topic Wise', 'PYQP')
+- exam_id (reference to exams collection, indexed)
+- name (indexed)
+- type (indexed)
 - description
-- associated_paper_name: String, (Optional, for sectional tests, e.g., 'General Studies Paper 1')
-- associated_subject: String, (Optional, for subject/topic tests, e.g., 'Polity')
+- associated_paper_name
+- associated_subject (indexed)
+- question_ids: [ObjectId] // Reference to Questions Collection
 - num_questions: Number,
 - duration_minutes: Number,
 - total_marks: Number,
-- marking_scheme: { correct: Number, incorrect: Number }, (Can inherit from Exam or be specific)
-- has_negative_marking: Boolean, (Can inherit from Exam or be specific)
-- difficulty_level: String, (Easy, Medium, Hard, Mixed)
-- is_active: Boolean, (For scheduling/availability)
-- created_at
-- updated_at
+- marking_scheme: { correct: Number, incorrect: Number },
+- has_negative_marking: Boolean,
+- difficulty_level: String, (indexed)
+- status: String (Draft, Published, Archived), indexed
+- created_by (reference to Users collection, admin role)
+- updated_by (reference to Users collection, admin role)
+- created_at (timestamp)
+- updated_at (timestamp)
 
 ### Questions Collection
 - _id
-- associated_exams: [ObjectId], (Exams this question is relevant for)
+- associated_exams: [ObjectId], (indexed)
 - question_text: String,
-- question_type: String, (e.g., 'MCQ_Single', 'MCQ_Multiple', 'AssertionReason', 'Matching', 'StatementBased')
-- options: [ { text: String, is_correct: Boolean } ], (for MCQ types)
-- correct_answer_text: String, (for non-MCQ or explanation reference)
+- question_type: String, (indexed)
+- options: [ { text: String, is_correct: Boolean } ],
+- correct_answer_text: String,
 - explanation: String,
-- subject: String, (e.g., 'Modern History', 'Reasoning Ability')
-- topic: String, (e.g., 'Indian National Movement', 'Syllogism')
-- difficulty_level: String, (Easy, Medium, Hard)
-- tags: [String], (e.g., 'PYQP_UPSC_2021', 'Conceptual')
-- language: String, (e.g., 'English')
-- media_urls: [String], (For images, passages)
-- marks_override: { correct: Number, incorrect: Number }, (Optional, if different from test default)
-- created_at
-- updated_at
+- subject: String, (indexed)
+- topic: String, (indexed)
+- difficulty_level: String, (indexed)
+- tags: [String], (indexed)
+- language: String, (indexed)
+- media_urls: [String],
+- marks_override: { correct: Number, incorrect: Number },
+- status: String (Draft, Needs Review, Approved, Archived), indexed
+- version (Number, default: 1)
+- created_by (reference to Users collection, admin role)
+- updated_by (reference to Users collection, admin role)
+- created_at (timestamp)
+- updated_at (timestamp)
 
-### UserProgress Collection
+### UserProgress Collection (Consider renaming to TestAttempts)
 - _id
-- user_id (reference to users collection)
-- test_id (reference to tests collection)
+- user_id (reference to users collection, indexed)
+- test_id (reference to tests collection, indexed)
+- exam_id (reference to exams collection, indexed for easier filtering)
 - score
-- time_taken
-- completed_at
-- subject_performance
-- difficulty_performance
+- total_marks_possible
+- accuracy (percentage)
+- percentile (calculated, optional)
+- time_taken_seconds
+- status (Started, In Progress, Completed, Abandoned)
+- started_at (timestamp)
+- completed_at (timestamp)
+- answers: [ { question_id: ObjectId, selected_option_index: Number/Array, time_taken: Number, status: String (Correct, Incorrect, Skipped) } ] // Detailed answer log
+// Remove subject_performance, difficulty_performance - Calculate on demand or store aggregated elsewhere if needed
+
+*(Note: Ensure appropriate database indexes are created for fields used in queries/filters/sorting for performance)*
+
+## Non-Functional Requirements (NFRs)
+
+### Scalability
+- Initial Target: Support up to 100 concurrent active test-takers.
+- Design database schema and queries for efficient scaling.
+- Infrastructure should allow for horizontal scaling of backend instances.
+
+### Availability
+- Target Uptime: 99.9% for production environment (excluding scheduled maintenance).
+- Implement health checks for backend services.
+- Consider database replica sets for high availability.
+
+### Maintainability
+- Adhere to consistent coding standards (ESLint/Prettier configured).
+- Implement structured logging (e.g., using Winston) for easier debugging.
+- Code should be well-commented where necessary (complex logic).
+- Aim for modular design in both frontend and backend.
+
+### Usability & Accessibility
+- Provide an intuitive and consistent user interface across web and mobile.
+- Target WCAG 2.1 Level AA compliance for accessibility where feasible.
+- Ensure responsiveness across common device sizes.
 
 ## Security Requirements
-- Secure authentication
-- Role-based access control
-- Data encryption
-- Secure file handling
-- Rate limiting
-- Input validation
+- Secure authentication (JWT with refresh tokens, secure password hashing & storage).
+- Role-based access control enforced at API level.
+- Data encryption (HTTPS enforced for all communication, sensitive data encrypted at rest if necessary).
+- Secure file handling (validate uploads, store securely, e.g., S3/Cloudinary).
+- API Rate limiting implemented to prevent abuse.
+- Input validation on all user inputs (backend and frontend).
+- Protection against common web vulnerabilities (OWASP Top 10): XSS (output encoding, content security policy), NoSQL Injection (use ORM/ODM properly), CSRF (if using cookies/sessions), etc.
+- Regular security audits and dependency vulnerability scanning.
+- Security headers (Helmet.js or equivalent configuration).
 
 ## Performance Requirements
-- Fast loading times
-- Smooth navigation
-- Efficient data handling
-- Concurrent test taking
-- Real-time score updates
-- Scalable architecture
+- Fast loading times (e.g., Target LCP < 2.5s, TTI < 5s).
+- Smooth navigation and UI interactions (minimal jank).
+- Efficient data handling (database indexing, query optimization, pagination).
+- Support for concurrent test taking (target X users simultaneously - define X).
+- Real-time score updates and immediate feedback post-test.
+- Scalable architecture capable of handling growth.
+- Implement API response caching where appropriate.
 
 ## Future Enhancements
 1. Adaptive learning system
@@ -401,127 +475,6 @@ This section provides granular details, dummy data, and refined flows to guide d
     *   **Description:** Exams for Public Sector Banks.
     *   **Exams within:** IBPS PO, IBPS Clerk, SBI PO, SBI Clerk
     *   **Managed By:** `admin@exambuddy.com`
-*   **Category Name:** University Entrance
-    *   **Description:** Common University Entrance Tests (UG & PG).
-    *   **Exams within:** CUET-UG, CUET-PG
-    *   **Managed By:** `anjali.gupta.manager@example.com`
 
-### Dummy Exam Profiles
-
-*   **Exam Name:** UPSC CSE Prelims 2025
-    *   **Category:** Civil Services
-    *   **Official Website Link:** `https://upsc.gov.in/`
-    *   **Exam Date (Tentative):** May 26, 2025
-    *   **Structure:**
-        *   Paper 1: GS - 100 Qs, 200 Marks, 2 Hrs, Neg: -0.66
-        *   Paper 2: CSAT - 80 Qs, 200 Marks, 2 Hrs, Neg: -0.83, Qualifying (33%)
-    *   **Syllabus Outline:** History, Geography, Polity, Economy, Env, Science, Current Affairs (GS); Comprehension, Reasoning, Numeracy (CSAT).
-*   **Exam Name:** SSC CGL Tier 1 2025
-    *   **Category:** SSC
-    *   **Structure:** Single Paper, 1 Hr, 100 Qs, 200 Marks, Neg: -0.50
-        *   Reasoning: 25 Qs, 50 Marks
-        *   General Awareness: 25 Qs, 50 Marks
-        *   Quantitative Aptitude: 25 Qs, 50 Marks
-        *   English: 25 Qs, 50 Marks
-    *   **Syllabus Outline:** Standard SSC Tier 1 Syllabus.
-*   **Exam Name:** CUET-UG 2025
-    *   **Category:** University Entrance
-    *   **Official Website Link:** `https://exams.nta.ac.in/CUET-UG/`
-    *   **Exam Date (Tentative):** May 15-31, 2025
-    *   **Structure:** Variable Sections:
-        *   Sec IA/IB: Languages (e.g., English) - 40/50 Qs, 45 mins.
-        *   Sec II: Domain Subjects (e.g., Physics) - 35/40 Qs out of 45/50, 45 mins.
-        *   Sec III: General Test - 50/60 Qs, 60 mins.
-    *   **Marking Scheme:** +5 correct, -1 incorrect.
-    *   **Syllabus Outline:** Class 12 syllabus + General Test components.
-*   **Exam Name:** CUET-PG 2025
-    *   **Category:** University Entrance
-    *   **Official Website Link:** `https://pgcuet.samarth.ac.in/`
-    *   **Exam Date (Tentative):** March 11-28, 2025
-    *   **Structure:** Varies by PG subject paper (MCQ based).
-    *   **Marking Scheme:** Varies (e.g., +4 / -1).
-    *   **Syllabus Outline:** Respective UG subject syllabus.
-
-### Dummy Mock Tests
-
-*   **Test Name:** UPSC Prelims 2025 - Full Mock Test 1 (GS Paper 1 Focus)
-    *   **Exam:** UPSC CSE Prelims 2025
-    *   **Type:** Full-Length Mock
-    *   **Structure:** Paper 1: 100 Qs, 200 Marks, 2 Hrs
-    *   **Difficulty:** Medium-Hard
-    *   **Status:** Published
-    *   **Focus Tags:** `Polity Heavy`, `Current Affairs May'24`
-    *   **Created By:** `anjali.gupta.manager@example.com`
-    *   **Created Date:** 2025-04-20
-    *   **Attempts Allowed:** 3
-*   **Test Name:** SSC CGL Tier 1 - Sectional Mock: Quantitative Aptitude Set 3
-    *   **Exam:** SSC CGL Tier 1 2025
-    *   **Type:** Sectional Mock
-    *   **Structure:** 25 Qs, 50 Marks, 15 Mins (suggested)
-    *   **Difficulty:** Hard
-    *   **Status:** Published
-    *   **Created By:** `admin@exambuddy.com`
-*   **Test Name:** CUET-UG General Test Mock 1
-    *   **Exam:** CUET-UG 2025
-    *   **Type:** Sectional Mock (General Test)
-    *   **Structure:** 60 Questions (Attempt 50), 120 Marks (Temp. +5/-1), 60 Minutes
-    *   **Difficulty:** Medium
-    *   **Status:** Published
-    *   **Focus Tags:** `General Knowledge`, `Reasoning`
-    *   **Created By:** `admin@exambuddy.com`
-    *   **Created Date:** 2025-05-01
-    *   **Attempts Allowed:** Unlimited (Free Tier)
-
-### Dummy Questions (Examples)
-
-*   **Exam:** UPSC CSE Prelims 2025
-    *   **Question ID:** `UPSC_GS1_POL_Q042`
-    *   **Subject:** Polity (GS Paper 1)
-    *   **Text:** "Which DPSPs were added by the 42nd Amendment...? [Options: 1. Healthy dev children, 2. Free legal aid, 3. Worker participation, 4. Env protection]"
-    *   **Type:** MCQ (Single Correct)
-    *   **Options:** (A) 1,2 (B) 1,2,3 (C) 2,3,4 (D) 1,2,3,4
-    *   **Answer:** (D)
-    *   **Explanation:** "42nd Amd added Art 39(f), 39A, 43A, 48A... [details]"
-    *   **Difficulty:** Medium
-    *   **Tags:** `DPSP`, `Amendments`, `Polity`
-    *   **Created By:** `anjali.gupta.manager@example.com`
-*   **Exam:** CUET-UG 2025
-    *   **Question ID:** `CUET_GT_GK_Q001`
-    *   **Subject:** General Knowledge (General Test)
-    *   **Text:** "Which city is 'Silicon Valley of India'?"
-    *   **Type:** MCQ (Single Correct)
-    *   **Options:** (A) Mumbai, (B) Hyderabad, (C) Bengaluru, (D) Chennai
-    *   **Answer:** (C)
-    *   **Explanation:** "Bengaluru known for IT companies."
-    *   **Difficulty:** Easy
-    *   **Tags:** `Geography`, `India`, `Cities`
-    *   **Created By:** `admin@exambuddy.com`
-
-### Detailed User Flow: Authentication
-
-1.  **Register:**
-    *   **Component:** `RegisterPage` (`/register`)
-    *   **Fields:** Full Name, Email, Password, Confirm Password.
-    *   **Client Validation:** Real-time checks (required, email format, password length/match).
-    *   **Micro Tasks:** Check email uniqueness (on blur), Submit -> API Call, Handle Success (Verification email sent? Redirect) / Error (Display message).
-    *   **API:** `POST /api/auth/register`
-    *   **DB Fields Added:** `isVerified`, `verificationToken`, `verificationTokenExpiry`.
-2.  **Email Verification:**
-    *   **Component:** `VerifyEmailPage` (`/verify-email/:token`)
-    *   **Micro Tasks:** API Call -> Backend validates token -> Update `isVerified` -> Display Success/Error -> Link to Login.
-    *   **API:** `GET /api/auth/verify-email/:token`
-3.  **Login:**
-    *   **Component:** `LoginPage` (`/login`)
-    *   **Fields:** Email, Password.
-    *   **Micro Tasks:** Client Validation, Submit -> API Call, Handle Success (Store token/user state, Redirect to Dashboard) / Error (Check `isVerified`, Invalid credentials, Account locked?).
-    *   **API:** `POST /api/auth/login`
-    *   **DB Fields Added:** `lastLogin`, `failedLoginAttempts`.
-4.  **Forgot/Reset Password:**
-    *   **Component:** `ForgotPasswordPage` (`/forgot-password`)
-        *   Field: Email.
-        *   Micro Tasks: Validate email exists, API Call -> Send Reset Email, Rate Limiting.
-        *   API: `POST /api/auth/forgot-password`
-    *   **Component:** `ResetPasswordPage` (`/reset-password/:token`)
-        *   Fields: New Password, Confirm New Password.
-        *   Micro Tasks: Validate passwords (match, strength), API Call -> Verify token -> Update Password -> Invalidate token.
-        *   API: `POST /api/auth/reset-password/:token`
+Admin features for bulk import/export of questions (e.g., via Excel/CSV).
+Admin review and approval workflow for new/edited questions.

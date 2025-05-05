@@ -145,3 +145,11 @@ build
 # macOS
 .DS_Store
 *.pem
+
+# Project-specific backups
+*.bak
+*.bak.bak
+*.bak.bak.bak
+
+# Tool-specific files
+.windsurfrules

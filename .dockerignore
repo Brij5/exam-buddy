@@ -1,43 +1,92 @@
-# Node.js
-node_modules
-npm-debug.log
-yarn-error.log
+# Node.js dependencies
+node_modules/
+**/node_modules/
 
-# Operating System files
-.DS_Store
-Thumbs.db
+# Build outputs
+dist/
+build/
+out/
 
-# Git
-.git
-.gitignore
+# Test directories and files
+test/
+tests/
+**/tests/
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+coverage/
 
-# Docker
-Dockerfile
-.dockerignore
-
-# Build artifacts / Temp files
+# Debug and log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 *.log
-*.tmp
-*.bak
-*.bak.bak
-*.bak.bak.bak
 
-# IDE / Editor specific
-.vscode/
+# IDE/editor files
 .idea/
+.vscode/
+*.swp
+*.swo
 
-# Environment variables
-.env*
-!.env.example
+# macOS system files
+.DS_Store
 
-# Specific project files/dirs to ignore if necessary
-# public/
-# assets/
-docs/
-scripts/
+# Version control
+.git/
+.gitignore
+.hg/
+.svn/
+
+# Environment and secrets
+.env
+.env.*
+!/.env.example
+!/.env.development
+!/.env.production
+*.pem
+*.key
+*.crt
+
+# Local/temporary files and folders
+tmp/
+temp/
+*.tmp
+.local/
+local/
+
+# Documentation and markdown (Allow README and License)
+*.md
+!README*
+!LICENSE*
 DEVELOPMENT_LOG.md
 PROJECT_REQUIREMENTS.md
-*.md.bak
-*.md.bak.bak
-*.md.bak.bak.bak
-compose.yaml.bak 
+docs/
+
+# Project-specific backups
+*.bak
+
+# Miscellaneous
+public/
+assets/
+
+# Exclude scripts not needed in production
+scripts/
+
+# Exclude client and server test/config/seed files (adjust if client build needed)
+client/
+# If client is built separately and served statically, keep this line.
+# If client source is needed in image (e.g. SSR), remove or adjust.
+
+server/tests/
+server/seed/
+server/seedData.js
+server/seedUsers.js
+server/seeder.js
+
+# Keep specific necessary server files if others are excluded
+# Example: !server/config/production.json
+
+# Exclude Git related files if accidentally included
+.gitattributes
+.gitmodules 

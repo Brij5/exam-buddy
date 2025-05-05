@@ -23,12 +23,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling in authentication flow
 - Enhanced validation middleware
 - Refactored configuration management
+- Standardized Docker setup using Node 20-alpine in multi-stage builds for client (Nginx) and server.
+- Consolidated Docker Compose configuration into `docker-compose.dev.yml` and `docker-compose.prod.yml`.
+- Updated `README.md` to accurately reflect Docker usage, ports, Node version, and project structure.
+  Consolidated and enhanced `README.md` with more detailed feature descriptions, tech stack, environment variable guidance, refined setup instructions, and example client/server structure diagrams.
+- Moved `PROJECT_REQUIREMENTS.md` and `DEVELOPMENT_LOG.md` into `docs/` directory.
+- Updated `.gitignore` to ignore `.bak*` and `.windsurfrules` files.
+- Updated `.dockerignore` for more effective build context minimization.
+- Cleaned up and separated dependencies between root (mobile), `server/`, and `client/` `package.json` files.
+- Relocated core server app file (`server.js` -> `server/app.js`) and utility scripts (root `scripts/` -> `server/scripts/`).
+- Refined `PROJECT_REQUIREMENTS.md` with details on user management, test interface, progress tracking, admin features, security, performance, DB schema, and technical stack based on real-world considerations.
+- Updated `DEVELOPMENT_LOG.md` to reflect current status, outline development strategy, define refined phases, highlight considerations, and set immediate priorities.
+- Updated `docs/architecture/overview.md` to align with current structure.
+- Added placeholder `docs/CONTRIBUTING.md` and `docs/DEPLOYMENT.md`.
+- Recommended OpenAPI/Swagger for API documentation in `docs/DEVELOPMENT_LOG.md`.
+- Cleaned up `docker/` directory, removing potentially redundant files/folders.
+- Added a Documentation section to `README.md` linking to files within `docs/`.
+- Added Frontend Implementation Plan section to `docs/DEVELOPMENT_LOG.md`.
 
 ### Fixed
 - Fixed environment variable loading
 - Resolved circular dependencies
 - Fixed JWT token verification
 - Fixed error handling in async routes
+
+### Removed
+- Deleted redundant root `Dockerfile`.
+- Deleted redundant `compose.yaml.bak`.
+- Deleted redundant `Dockerfile.bak` files within `client/` and `server/`.
+- (Attempted to delete various `.bak` files and old backup directory `exam-buddy-backup-20250505231849`, requires manual removal if still present).
+- Deleted unused `database.rules.json`.
+- Deleted potentially redundant `docker/docker-compose.yml`.
+- Attempted deletion of other root files (`.env*`, `.DS_Store`, `.windsurfrules`) - may require manual cleanup.
 
 ## [0.1.0] - 2025-05-05
 ### Added

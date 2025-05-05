@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { logger } from './utils/logger.js';
 import { connectDB } from './utils/db.js';
-import app from '../server.js';
+import app from './app.js';
 import config from './config/config.js';
 
 // Handle uncaught exceptions
