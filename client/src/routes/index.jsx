@@ -5,7 +5,7 @@ import { Box } from '@mui/material'; // Keep Box for potential layout use within
 
 // Common Components
 import ProtectedRoute from '../components/common/ProtectedRoute'; // Changed to default import
-import MainLayout from '../layouts/MainLayout'; // Conceptual: To be created
+import NavigationMenu from '../components/common/NavigationMenu'; // Import NavigationMenu
 import AuthLayout from '../layouts/AuthLayout'; // Conceptual: To be created
 
 // Page Components (ensure all needed pages are imported)
@@ -53,8 +53,8 @@ const RoutesComponent = () => {
       {/* Since it navigates away immediately, its position relative to layouts is less critical */}
       <Route path="/logout" element={<Logout />} />
 
-      {/* Protected routes with Main Layout */}
-      <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+      {/* Protected routes with NavigationMenu Layout */}
+      <Route element={<ProtectedRoute><NavigationMenu /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/exam/:examId/instructions" element={<ExamInstructionsPage />} />
         <Route path="/mock-test/:examId" element={<MockTestScreen />} /> {/* Route to take a test */}
@@ -70,14 +70,14 @@ const RoutesComponent = () => {
         {/* Add other user routes here: /test/:id, /results/:id etc. */}
       </Route>
       
-      {/* Admin routes with Main Layout (or dedicated AdminLayout) */}
-      <Route element={<ProtectedRoute adminRequired><MainLayout /></ProtectedRoute>}>
+      {/* Admin routes with NavigationMenu Layout (or dedicated AdminLayout) */}
+      <Route element={<ProtectedRoute adminRequired><NavigationMenu /></ProtectedRoute>}>
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         {/* Add other admin routes here: /admin/users, /admin/exams, etc. */}
       </Route>
 
-      {/* Exam Manager routes */}
-      <Route element={<ProtectedRoute examManagerRequired><MainLayout /></ProtectedRoute>}>
+      {/* Exam Manager routes with NavigationMenu Layout */}
+      <Route element={<ProtectedRoute examManagerRequired><NavigationMenu /></ProtectedRoute>}>
         <Route path="/exam-manager/dashboard" element={<ExamManagerDashboard />} />
         {/* Add other exam manager routes here: /exam-manager/exams, /exam-manager/create-exam etc. */}
       </Route>

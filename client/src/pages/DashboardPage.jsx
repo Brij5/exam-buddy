@@ -1,21 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link as RouterLink } from 'react-router-dom';
-import NavigationMenu from "../components/common/NavigationMenu";
 import {
   Box,
-  Container,
   Typography,
   Grid,
   Card,
   CardContent,
-  CardActions,
-  Button,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   LinearProgress,
   List,
   ListItem,
@@ -24,72 +15,52 @@ import {
   Divider,
   Alert,
   Paper,
-  Chip,
   IconButton,
-  Snackbar,
-  AlertTitle
 } from "@mui/material";
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SchoolIcon from '@mui/icons-material/School';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import HomeIcon from '@mui/icons-material/Home';
-import PersonIcon from '@mui/icons-material/Person';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { fetchCategories } from '../store/slices/examSlice'; // Import the thunk
+import { fetchCategories } from '../store/slices/examSlice'; 
+import { fetchStudentProgressData } from '../store/slices/progressSlice'; 
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
-  const { categories, loading: EXAMS_LOADING, error: EXAMS_ERROR } = useSelector((state) => state.exams);
-  // const { loading: PROGRESS_LOADING, error: PROGRESS_ERROR, recentAttempts, overallProgress } = useSelector((state) => state.progress); // Commented out - Progress slice not yet implemented
-  // Placeholder data until progress slice is implemented
-  const PROGRESS_LOADING = false;
-  const PROGRESS_ERROR = null;
-  const recentAttempts = [];
-  const overallProgress = { accuracy: 0, studyTime: 0, weakAreas: [] };
-
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const { categories, loading: examsLoading, error: examsError } = useSelector((state) => state.exams);
+  const { 
+    recentAttempts, 
+    overallProgress, 
+    loading: progressLoading,
+    error: progressError 
+  } = useSelector((state) => state.progress);
 
   useEffect(() => {
     dispatch(fetchCategories());
+    dispatch(fetchStudentProgressData()); 
   }, [dispatch]);
 
-  const menuItems = [
-    {
-      text: 'Dashboard',
-      icon: <DashboardIcon />,
-      path: '/dashboard',
-    },
-    {
-      text: 'Home',
-      icon: <HomeIcon />,
-      path: '/home',
-    },
-    {
-      text: 'Profile',
-      icon: <PersonIcon />,
-      path: '/profile',
-    },
-    {
-      text: 'Settings',
-      icon: <SettingsIcon />,
-      path: '/settings',
-    },
-  ];
-
-  // Fetch categories when the component mounts
-  useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
+  if (examsLoading === 'pending' || progressLoading === 'pending') {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  
+  if (examsError || progressError) {
+    return (
+      <Alert severity="error">
+        {examsError ? `Error loading exam data: ${examsError.message || examsError}` : ''}
+        {progressError ? `Error loading progress data: ${progressError.message || progressError}` : ''}
+      </Alert>
+    );
+  }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Navigation menuItems={menuItems} />
+    <Box sx={{ p: 0 }}>
       <Typography variant="h4" gutterBottom>
         Welcome, {userInfo ? userInfo.name : 'User'}!
       </Typography>
@@ -202,7 +173,7 @@ const DashboardPage = () => {
           {overallProgress?.weakAreas?.map((area, index) => (
             <ListItem key={index}>
               <ListItemIcon>
-                <AssignmentIcon sx={{ color: 'warning.main' }} />
+                <SchoolIcon sx={{ color: 'warning.main' }} />
               </ListItemIcon>
               <ListItemText
                 primary={area.topic}
@@ -216,58 +187,32 @@ const DashboardPage = () => {
       {/* Available Exam Categories */}
       <Paper sx={{ p: 2, mt: 3 }}>
         <Typography variant="h6">Available Exam Categories</Typography>
-        {EXAMS_LOADING && <CircularProgress sx={{ display: 'block', margin: '20px auto' }} />}
-        {EXAMS_ERROR && <Alert severity="error" sx={{ mt: 2 }}>{`Failed to load categories: ${EXAMS_ERROR}`}</Alert>}
-        {!EXAMS_LOADING && !EXAMS_ERROR && categories && categories.length > 0 && (
+        {examsLoading && <CircularProgress sx={{ display: 'block', margin: '20px auto' }} />}
+        {examsError && <Alert severity="error" sx={{ mt: 2 }}>{`Failed to load categories: ${examsError}`}</Alert>}
+        {!examsLoading && !examsError && categories && categories.length > 0 && (
           <Grid container spacing={3} sx={{ mt: 2 }}>
             {categories.map((category) => (
               <Grid item xs={12} sm={6} md={4} key={category._id}>
                 <Card sx={{ height: '100%' }}>
-                  <CardActionArea component={RouterLink} to={`/exams/category/${category._id}`} sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <CardContent>
-                      <Typography gutterBottom variant="h5" component="div">
-                        {category.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {category.description}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="div">
+                      {category.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {category.description}
+                    </Typography>
+                  </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
         )}
-        {!EXAMS_LOADING && !EXAMS_ERROR && (!categories || categories.length === 0) && (
+        {!examsLoading && !examsError && (!categories || categories.length === 0) && (
           <Typography sx={{ mt: 2 }}>No exam categories available at the moment.</Typography>
         )}
       </Paper>
-
-      {/* Notifications */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity="info"
-          sx={{ width: '100%' }}
-        >
-          <AlertTitle>Reminder</AlertTitle>
-          You have new study recommendations based on your recent performance.
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };
 
-const EnhancedDashboardPage = () => {
-  return (
-    <NavigationMenu>
-      <DashboardPage />
-    </NavigationMenu>
-  );
-};
-export default EnhancedDashboardPage;
+export default DashboardPage;
