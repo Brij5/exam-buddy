@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
-import NavigationMenu from "../components/common/NavigationMenu";
 import {
   Box,
   Typography,
@@ -27,10 +26,6 @@ import SchoolIcon from '@mui/icons-material/School';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import HomeIcon from '@mui/icons-material/Home';
-import PersonIcon from '@mui/icons-material/Person';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { fetchCategories } from '../store/slices/examSlice';
 import {
   fetchStudentProgressData,
@@ -57,32 +52,8 @@ const StudentDashboardPage = () => {
     }
   }, [dispatch, userInfo]);
 
-  const menuItems = [
-    {
-      text: 'Dashboard',
-      icon: <DashboardIcon />,
-      path: '/student-dashboard', 
-    },
-    {
-      text: 'Home',
-      icon: <HomeIcon />,
-      path: '/home',
-    },
-    {
-      text: 'Profile',
-      icon: <PersonIcon />,
-      path: '/profile',
-    },
-    {
-      text: 'Settings',
-      icon: <SettingsIcon />,
-      path: '/settings',
-    },
-  ];
-
   return (
     <Box sx={{ p: 3 }}>
-      <NavigationMenu menuItems={menuItems} />
       <Typography variant="h4" gutterBottom>
         Welcome, {userInfo ? userInfo.name : 'User'}!
       </Typography>
@@ -142,10 +113,13 @@ const StudentDashboardPage = () => {
               </Typography>
             </Box>
             )}
-            <LinearProgress
-              variant="determinate"
-              value={overallProgress?.totalStudyTime ? (overallProgress.totalStudyTime / 100 * 100) : 0} 
-            />
+            { !PROGRESS_LOADING && !PROGRESS_ERROR && (
+              <LinearProgress
+                variant="determinate"
+                value={overallProgress?.totalStudyTime ? Math.min((overallProgress.totalStudyTime / 20) * 100, 100) : 0} 
+                sx={{ mt: 1 }} 
+              />
+            )}
           </Card>
         </Grid>
       </Grid>
@@ -265,8 +239,4 @@ const StudentDashboardPage = () => {
   );
 };
 
-const EnhancedStudentDashboardPage = (props) => {
-  return <StudentDashboardPage {...props} />;
-};
-
-export default EnhancedStudentDashboardPage;
+export default StudentDashboardPage;

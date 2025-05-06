@@ -19,7 +19,17 @@ import DashboardPage from "../pages/DashboardPage";
 import AdminDashboardPage from "../pages/admin/AdminDashboard.jsx"; // Corrected path and filename
 import ExamManagerDashboard from '../pages/exam-manager/ExamManagerDashboard.jsx'; // Import ExamManagerDashboard
 import ExamInstructionsPage from "../pages/ExamInstructionsPage";
+import Logout from '../components/auth/Logout'; // Added Logout import
 // import NotFoundPage from '../pages/NotFoundPage'; // Good practice to have a 404 page
+
+// Placeholder imports for new student pages - create these files later
+import AllExamsPage from '../pages/AllExamsPage'; // Path updated
+import ExamsByCategoryPage from '../pages/ExamsByCategoryPage'; // Path updated
+import TestResultPage from '../pages/TestResultPage'; // Path updated
+import StudentProgressPage from '../pages/StudentProgressPage'; // Path updated
+import ProfilePage from '../pages/ProfilePage'; // Path updated (assuming it's in /pages directly)
+import SettingsPage from '../pages/SettingsPage'; // Path updated
+import MockTestScreen from '../screens/MockTestScreen'; // Assuming this is where students take tests
 
 // Removed local ProtectedRoute definition
 
@@ -39,11 +49,25 @@ const RoutesComponent = () => {
         {/* Add forgot/reset password routes here? */}
       </Route>
 
+      {/* Logout Route - can be here or within a protected section if preferred */}
+      {/* Since it navigates away immediately, its position relative to layouts is less critical */}
+      <Route path="/logout" element={<Logout />} />
+
       {/* Protected routes with Main Layout */}
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/exam/:examId/instructions" element={<ExamInstructionsPage />} />
-        {/* Add other user routes here: /profile, /test/:id, /results/:id etc. */}
+        <Route path="/mock-test/:examId" element={<MockTestScreen />} /> {/* Route to take a test */}
+        
+        {/* Student specific routes */}
+        <Route path="/exams" element={<AllExamsPage />} />
+        <Route path="/exams/category/:categoryId" element={<ExamsByCategoryPage />} />
+        <Route path="/results/:attemptId" element={<TestResultPage />} />
+        <Route path="/progress" element={<StudentProgressPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        
+        {/* Add other user routes here: /test/:id, /results/:id etc. */}
       </Route>
       
       {/* Admin routes with Main Layout (or dedicated AdminLayout) */}
