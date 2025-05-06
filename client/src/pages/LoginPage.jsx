@@ -133,8 +133,8 @@ const LoginPage = () => {
         >
           {loading ? <CircularProgress size={24} /> : 'Sign In'}
         </Button>
-        <Grid container>
-          <Grid xs>
+        <Grid container spacing={2}>
+          <Grid>
             {/* Point to the correct route */}
             <Link component={RouterLink} to="/forgot-password" variant="body2">
               Forgot password?

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
   Typography,
@@ -25,11 +25,22 @@ import {
   Visibility as VisibilityIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Tooltip,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import ExamManagerNavigation from '../components/Navigation/ExamManagerNavigation';
-import { getStats, getRecentActivity } from '../store/slices/examManagerSlice';
+import ExamManagerNavigation from '../../components/Navigation/ExamManagerNavigation';
+
+import {
+  fetchExamManagerStats,
+  fetchRecentActivity,
+  fetchManagedExams,
+  selectExamManagerStats,
+  selectRecentActivity,
+  selectManagedExams,
+  selectExamManagerLoading,
+  selectExamManagerError,
+} from '../../store/slices/examManagerSlice';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -52,11 +63,17 @@ const StatsCard = styled(Card)({
 const ExamManagerDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { stats, recentActivity, loading } = useSelector((state) => state.examManager);
+
+  const stats = useSelector(selectExamManagerStats);
+  const recentActivity = useSelector(selectRecentActivity);
+  const managedExams = useSelector(selectManagedExams);
+  const isLoading = useSelector(selectExamManagerLoading);
+  const error = useSelector(selectExamManagerError);
 
   useEffect(() => {
-    dispatch(getStats());
-    dispatch(getRecentActivity());
+    dispatch(fetchExamManagerStats());
+    dispatch(fetchRecentActivity());
+    dispatch(fetchManagedExams());
   }, [dispatch]);
 
   const handleCreateExam = () => {
@@ -83,13 +100,12 @@ const ExamManagerDashboard = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading && (!stats && !recentActivity.length && !managedExams.length)) {
     return (
-      <ExamManagerNavigation>
-        <Box sx={{ width: '100%', mt: 4 }}>
-          <LinearProgress />
-        </Box>
-      </ExamManagerNavigation>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <LinearProgress />
+        <Typography sx={{ ml: 2 }}>Loading Exam Manager Dashboard...</Typography>
+      </Box>
     );
   }
 
@@ -103,16 +119,22 @@ const ExamManagerDashboard = () => {
           Welcome to the exam manager dashboard. Here you can manage exams and view reports.
         </Typography>
 
+        {error && (
+          <Typography variant="body1" color="error.main" gutterBottom>
+            {typeof error === 'object' ? JSON.stringify(error) : error}
+          </Typography>
+        )}
+
         <Grid container spacing={3}>
           {/* Stats Cards */}
           <Grid item xs={12} sm={6} md={3}>
             <StatsCard>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <SchoolIcon sx={{ color: '#1976d2', mr: 1 }} />
-                <Typography variant="h6">Total Exams</Typography>
+                <Typography variant="h6">Total Managed Exams</Typography>
               </Box>
               <Typography variant="h3" align="center">
-                {stats?.totalExams || 0}
+                {stats?.totalExams ?? 'N/A'}
               </Typography>
             </StatsCard>
           </Grid>
@@ -121,10 +143,10 @@ const ExamManagerDashboard = () => {
             <StatsCard>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <AssessmentIcon sx={{ color: '#4caf50', mr: 1 }} />
-                <Typography variant="h6">Active Exams</Typography>
+                <Typography variant="h6">Active/Published Exams</Typography>
               </Box>
               <Typography variant="h3" align="center">
-                {stats?.activeExams || 0}
+                {stats?.activeExams ?? 'N/A'}
               </Typography>
             </StatsCard>
           </Grid>
@@ -133,16 +155,23 @@ const ExamManagerDashboard = () => {
             <StatsCard>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <BarChartIcon sx={{ color: '#f57c00', mr: 1 }} />
-                <Typography variant="h6">Average Score</Typography>
+                <Typography variant="h6">Average Score (Placeholder)</Typography>
               </Box>
               <Typography variant="h3" align="center">
-                {stats?.averageScore || 0}%
+                {'75%'}
               </Typography>
+            </StatsCard>
+          </Grid>
+          {/* Create New Exam Button */}
+          <Grid item xs={12} sm={6} md={3}>
+            <StatsCard onClick={handleCreateExam} sx={{ justifyContent: 'center', backgroundColor: 'primary.main', color: 'primary.contrastText', '&:hover': { backgroundColor: 'primary.dark'} }}>
+              <AddIcon sx={{ fontSize: 40, mb: 1 }} />
+              <Typography variant="h6" align="center">Create New Exam</Typography>
             </StatsCard>
           </Grid>
         </Grid>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid item xs={12}>
             <Card>
               <CardHeader
@@ -192,19 +221,32 @@ const ExamManagerDashboard = () => {
                               <VisibilityIcon />
                             </IconButton>
                           </Tooltip>
-                          {activity.editable && (
-                            <Tooltip title="Edit">
-                              <IconButton
-                                onClick={() => handleEdit(activity.type, activity.id)}
-                                size="small"
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                          )}
+                          <Tooltip title="Edit">
+                            <IconButton
+                              onClick={() => handleEdit(activity.type, activity.id)}
+                              size="small"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              size="small"
+                              disabled // Disabled until handleDelete is implemented
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
                     ))}
+                    {recentActivity.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={4} align="center">
+                          <Typography variant="body2">No recent activity.</Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>

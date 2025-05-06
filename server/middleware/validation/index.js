@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { logger } from '../../utils/logger.js';
-import { ApiError } from '../../utils/ApiError.js';
+import ApiError from '../../utils/ApiError.js';
 
 /**
  * Validate request body against Joi schema

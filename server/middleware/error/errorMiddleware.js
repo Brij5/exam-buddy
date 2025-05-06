@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger.js';
-import { ApiError } from '../../utils/ApiError.js';
+import ApiError from '../../utils/ApiError.js';
 import config from '../../config/config.js';
 
 /**
@@ -10,18 +10,6 @@ import config from '../../config/config.js';
  */
 const notFound = (req, res, next) => {
   next(new ApiError(404, `Not Found - ${req.originalUrl}`));
-};
-
-/**
- * Handle errors for API routes that don't exist
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const apiNotFound = (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `API endpoint ${req.originalUrl} not found`,
-  });
 };
 
 /**
@@ -78,7 +66,7 @@ const errorHandler = (err, req, res, next) => {
     // Rate limiter error
     statusCode = 429;
     message = 'Too many requests, please try again later';
-  }
+  } else if (err.name === 'TokenExpiredError') {
     // JWT expired
     statusCode = 401;
     message = 'Token expired';
@@ -100,6 +88,8 @@ const errorHandler = (err, req, res, next) => {
 
 /**
  * Handle 404 errors for API routes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  */
 const apiNotFound = (req, res) => {
   throw new ApiError(404, `API endpoint not found: ${req.originalUrl}`);

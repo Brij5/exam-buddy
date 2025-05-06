@@ -1,7 +1,7 @@
-import asyncHandler from 'express-async-handler';
-import Progress from '../models/Progress.js';
-import TestAttempt from '../models/TestAttempt.js';
-import { protect } from '../middleware/authMiddleware.js';
+import asyncHandler from '../../utils/asyncHandler.js';
+import Progress from '../../models/progress/Progress.js';
+import TestAttempt from '../../models/TestAttempt.js';
+import { protect } from '../../middleware/auth/authMiddleware.js';
 
 // @desc    Get user's progress
 // @route   GET /api/progress

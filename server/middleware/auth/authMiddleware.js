@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { promisify } from 'util';
-import User from '../../models/User.js';
+import User from '../../models/user/index.js';
 import { logger } from '../../utils/logger.js';
-import { ApiError } from '../../utils/ApiError.js';
+import ApiError from '../../utils/ApiError.js';
 import config from '../../config/config.js';
 
 // Promisify jwt.verify
@@ -62,7 +62,7 @@ export const protect = async (req, res, next) => {
  * Restrict routes to specific roles
  * @param {...String} roles - Allowed roles
  */
-const restrictTo = (...roles) => {
+export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       throw new ApiError(
@@ -77,12 +77,12 @@ const restrictTo = (...roles) => {
 /**
  * Middleware for admin authorization
  */
-export const admin = restrictTo('Admin');
+export const admin = authorize('Admin');
 
 /**
  * Middleware for exam manager authorization
  */
-export const examManager = restrictTo('Admin', 'ExamManager');
+export const examManager = authorize('Admin', 'ExamManager');
 
 /**
  * Check if user is logged in (for frontend)
@@ -130,5 +130,5 @@ export default {
   examManager,
   isLoggedIn,
   isVerified,
-  restrictTo,
+  authorize,
 };

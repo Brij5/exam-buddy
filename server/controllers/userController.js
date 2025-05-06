@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import User from '../models/user/index.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import generateToken from '../utils/generateToken.js';
 import crypto from 'crypto'; // Need crypto for resetPassword
@@ -72,32 +72,67 @@ export const registerUser = asyncHandler(async (req, res) => {
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
+  console.log('Login attempt for email:', email);
+
   // Basic validation
   if (!email || !password) {
+    console.log('Missing email or password');
     res.status(400);
     throw new Error('Please provide email and password');
   }
 
-  // Find user by email - explicitly select password which is hidden by default
-  const user = await User.findOne({ email }).select('+password');
+  try {
+    // Find user by email - explicitly select password which is hidden by default
+    // Also populate managedCategoryIds if they exist for the user
+    const user = await User.findOne({ email }).select('+password').populate('managedCategoryIds');
+    
+    if (!user) {
+      console.log('User not found');
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
 
-  // Check if user exists and password matches
-  if (user && (await user.matchPassword(password))) {
-    // Generate token
-    const token = generateToken(user._id, user.role);
+    console.log('User found:', user.email);
+    console.log('User is verified:', user.isVerified);
+    
+    // Check if user exists and password matches
+    const isMatch = await user.matchPassword(password);
+    console.log('Password match:', isMatch);
 
-    // Send response
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: token, // Send token back in response body
-      // Consider sending token via HttpOnly cookie for enhanced security later
-    });
-  } else {
-    res.status(401); // Unauthorized
-    throw new Error('Invalid email or password');
+    if (isMatch) {
+      // Generate token
+      const token = generateToken(
+        user._id,
+        user.role,
+        user.role === 'ExamManager' ? user.managedCategoryIds.map(cat => cat._id) : [] // Pass IDs
+      );
+      console.log('Token generated successfully');
+
+      // Construct response object
+      const responseData = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: token,
+      };
+
+      if (user.role === 'ExamManager') {
+        responseData.managedCategoryIds = user.managedCategoryIds.map(cat => cat._id); // Send IDs
+        // Optionally, send full category objects if needed by the frontend immediately after login
+        // responseData.managedCategories = user.managedCategoryIds; 
+      }
+
+      // Send response
+      res.json(responseData);
+    } else {
+      console.log('Invalid password');
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error; // Let the error handler handle it
   }
 });
 

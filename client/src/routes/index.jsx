@@ -17,7 +17,7 @@ import VerifyEmailPage from "../pages/VerifyEmailPage"; // Added
 import SplashScreen from "../pages/SplashScreen"; // Added
 import DashboardPage from "../pages/DashboardPage";
 import AdminDashboardPage from "../pages/admin/AdminDashboard.jsx"; // Corrected path and filename
-// import ExamManagerDashboardPage from '../pages/ExamManagerDashboardPage'; // Add if needed
+import ExamManagerDashboard from '../pages/exam-manager/ExamManagerDashboard.jsx'; // Import ExamManagerDashboard
 import ExamInstructionsPage from "../pages/ExamInstructionsPage";
 // import NotFoundPage from '../pages/NotFoundPage'; // Good practice to have a 404 page
 
@@ -52,10 +52,11 @@ const RoutesComponent = () => {
         {/* Add other admin routes here: /admin/users, /admin/exams, etc. */}
       </Route>
 
-      {/* Exam Manager routes? */}
-      {/* <Route element={<ProtectedRoute examManagerRequired><MainLayout /></ProtectedRoute>}>
-        <Route path="/exam-manager/dashboard" element={<ExamManagerDashboardPage />} />
-      </Route> */}
+      {/* Exam Manager routes */}
+      <Route element={<ProtectedRoute examManagerRequired><MainLayout /></ProtectedRoute>}>
+        <Route path="/exam-manager/dashboard" element={<ExamManagerDashboard />} />
+        {/* Add other exam manager routes here: /exam-manager/exams, /exam-manager/create-exam etc. */}
+      </Route>
 
       {/* Catch all / 404 Route */}
       {/* <Route path="*" element={<NotFoundPage />} /> */}

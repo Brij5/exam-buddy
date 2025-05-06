@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger.js';
-import { ApiError } from '../../utils/ApiError.js';
+import ApiError from '../../utils/ApiError.js';
 
 /**
  * Middleware to validate request data against a Joi schema

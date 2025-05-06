@@ -6,28 +6,34 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Please add a name'],
+    trim: true,
+    maxlength: [50, 'Name cannot exceed 50 characters'],
   },
   email: {
     type: String,
     required: [true, 'Please add an email'],
     unique: true,
     lowercase: true,
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please add a valid email',
-    ],
+    match: [/^\S+@\S+\.\S+$/, 'Please add a valid email'],
   },
   password: {
     type: String,
     required: [true, 'Please add a password'],
-    minlength: 8,
+    minlength: [8, 'Password must be at least 8 characters long'],
     select: false, // Do not return password by default when querying users
   },
+  passwordChangedAt: Date,
   role: {
     type: String,
     enum: ['Student', 'Admin', 'ExamManager'],
     default: 'Student',
   },
+  managedCategoryIds: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ExamCategory',
+    },
+  ],
   profilePictureUrl: {
     type: String,
     default: '/default_avatar.png', // Placeholder path
@@ -84,6 +90,10 @@ userSchema.pre('save', async function (next) {
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    // If password is modified (and not new), set passwordChangedAt
+    if (!this.isNew) {
+      this.passwordChangedAt = Date.now() - 1000; // Subtract 1 sec to ensure token is issued after password change
+    }
     next();
   } catch (err) {
     next(err);
@@ -111,6 +121,17 @@ userSchema.methods.getResetPasswordToken = function () {
 
   // Return the unhashed token (to be sent to the user, e.g., via email)
   return resetToken;
+};
+
+// Method: Check if user changed password after the token was issued
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+    // JWTTimestamp is in seconds, passwordChangedAt is a Date object
+    return JWTTimestamp < changedTimestamp;
+  }
+  // False means NOT changed after the token was issued
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

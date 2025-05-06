@@ -1,30 +1,31 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
-import User from '../server/models/User.js';
-import ExamCategory from '../server/models/ExamCategory.js';
-import Exam from '../server/models/Exam.js';
+import User from '../models/user/User.js';
+import ExamCategory from '../models/category/ExamCategory.js';
+import Exam from '../models/exam/Exam.js';
 
-dotenv.config();
+// Load environment variables
+dotenv.config({ path: '../../.env' });
 
-// Default MongoDB connection string
-const DEFAULT_MONGO_URI = 'mongodb://localhost:27017/exam-buddy';
+// Default MongoDB URI
+const DEFAULT_MONGO_URI = 'mongodb://localhost:27017/exam-buddy-dev';
 
 // Database connection
 const connectDB = async () => {
   try {
     // Use environment variable if available, otherwise use default
-    const mongoUri = 'mongodb://localhost:27017/exam-buddy';
+    const mongoUri = process.env.MONGODB_URI || DEFAULT_MONGO_URI;
     
     console.log('🔌 Connecting to MongoDB...');
     
     await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
-      family: 4
+      family: 4,
     });
     
-    console.log('✅ MongoDB Connected successfully');
+    console.log(`✅ MongoDB Connected successfully to ${mongoUri}`);
     
     // Verify the connection
     const db = mongoose.connection;
@@ -41,35 +42,67 @@ const connectDB = async () => {
   }
 };
 
-// Sample data
+// Enhanced user data with secure passwords and additional fields
 const users = [
   {
     name: 'Admin User',
-    email: 'admin@example.com',
-    password: 'admin123',
+    email: 'admin@exambuddy.com',
+    password: 'Admin@Secure123',
     role: 'Admin',
-    isVerified: true
+    isVerified: true,
+    profilePictureUrl: '/default_avatar.png',
+    phoneNumber: '+911234567890',
+    preferredLanguage: 'English',
+    subscriptionTier: 'Premium',
+    targetExams: []
   },
   {
     name: 'Exam Manager',
-    email: 'exammanager@example.com',
-    password: 'manager123',
+    email: 'manager@exambuddy.com',
+    password: 'Manager@Secure456',
     role: 'ExamManager',
-    isVerified: true
+    isVerified: true,
+    profilePictureUrl: '/default_avatar.png',
+    phoneNumber: '+911234567891',
+    preferredLanguage: 'English',
+    subscriptionTier: 'Premium',
+    targetExams: []
   },
   {
-    name: 'Priya',
-    email: 'priya@example.com',
-    password: 'priya123',
+    name: 'Priya Sharma',
+    email: 'priya@exambuddy.com',
+    password: 'Student@Secure789',
     role: 'Student',
-    isVerified: true
+    isVerified: true,
+    profilePictureUrl: '/default_avatar.png',
+    phoneNumber: '+911234567892',
+    preferredLanguage: 'Hindi',
+    subscriptionTier: 'Free',
+    targetExams: ['UPSC', 'Banking']
   },
   {
-    name: 'Rahul',
-    email: 'rahul@example.com',
-    password: 'rahul123',
+    name: 'Rahul Kumar',
+    email: 'rahul@exambuddy.com',
+    password: 'Student@Secure101',
     role: 'Student',
-    isVerified: true
+    isVerified: true,
+    profilePictureUrl: '/default_avatar.png',
+    phoneNumber: '+911234567893',
+    preferredLanguage: 'English',
+    subscriptionTier: 'Premium',
+    targetExams: ['JEE', 'NEET']
+  },
+  {
+    name: 'Anjali Patel',
+    email: 'anjali@exambuddy.com',
+    password: 'Student@Secure202',
+    role: 'Student',
+    isVerified: true,
+    profilePictureUrl: '/default_avatar.png',
+    phoneNumber: '+911234567894',
+    preferredLanguage: 'Gujarati',
+    subscriptionTier: 'Free',
+    targetExams: ['SSC', 'Banking']
   }
 ];
 
@@ -95,14 +128,29 @@ const examCategories = [
 // Update or create users
 const updateUsers = async () => {
   try {
+    // Fetch some category IDs to assign to the Exam Manager
+    const civilServicesCategory = await ExamCategory.findOne({ name: 'Civil Services' });
+    const sscCategory = await ExamCategory.findOne({ name: 'SSC' });
+
+    const managerAssignedCategoryIds = [];
+    if (civilServicesCategory) managerAssignedCategoryIds.push(civilServicesCategory._id);
+    if (sscCategory) managerAssignedCategoryIds.push(sscCategory._id);
+
     for (const user of users) {
       console.log(`Updating user: ${user.email}`);
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(user.password, salt);
       
+      let userData = { ...user, password: hashedPassword };
+
+      if (user.email === 'manager@exambuddy.com') {
+        userData.managedCategoryIds = managerAssignedCategoryIds;
+        console.log(`Assigning categories to Exam Manager: ${managerAssignedCategoryIds.join(', ')}`);
+      }
+
       await User.findOneAndUpdate(
         { email: user.email },
-        { ...user, password: hashedPassword },
+        userData,
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
     }
@@ -138,12 +186,12 @@ const updateDatabase = async () => {
     
     await connectDB();
     
-    // Run updates in sequence
-    console.log('\n🔄 Updating users...');
-    await updateUsers();
-    
+    // Run updates in sequence: Categories first, then Users
     console.log('\n🔄 Updating exam categories...');
     await updateExamCategories();
+
+    console.log('\n🔄 Updating users...');
+    await updateUsers();
     
     console.log('\n✅ Database update completed successfully!');
     process.exit(0);

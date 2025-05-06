@@ -1,3 +1,5 @@
+// console.log('[DEBUG] Top of server/app.js');
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -18,11 +20,8 @@ import { errorHandler, notFound, apiNotFound } from './middleware/error/errorMid
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Import routes (Corrected paths relative to app.js)
-import authRoutes from './routes/auth/authRoutes.js';
-import userRoutes from './routes/user/userRoutes.js'; // Added
-// import testRoutes from './routes/test/testRoutes.js';
-// import adminRoutes from './routes/admin/adminRoutes.js';
+// Import main API router
+import allApiRoutes from './routes/index.js'; 
 
 // Create Express app
 const app = express();
@@ -34,7 +33,7 @@ app.use(helmet());
 
 // Development logging
 if (config.env === 'development') {
-  const morgan = await import('morgan');
+  const morgan = await import('morgan'); 
   app.use(morgan.default('dev'));
 }
 
@@ -66,8 +65,8 @@ app.use(
   })
 );
 
-// Serving static files
-// app.use(express.static(path.join(__dirname, 'public'))); // Maybe adjust path if needed
+// Serving static files 
+// app.use(express.static(path.join(__dirname, 'public'))); 
 
 // Test middleware
 app.use((req, res, next) => {
@@ -76,10 +75,19 @@ app.use((req, res, next) => {
 });
 
 // 2) ROUTES
-app.use('/api/users', userRoutes); // Mounted user routes
-app.use('/api/auth', authRoutes); // Changed from /api/v1/auth for consistency, adjust if needed
-// app.use('/api/tests', testRoutes);
-// app.use('/api/admin', adminRoutes);
+// Root route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Exam Buddy API is running!',
+    documentation: '/api-docs',
+    environment: config.env,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Mount all API routes from routes/index.js
+app.use('/api', allApiRoutes);
 
 // Handle 404 for API routes
 app.all('/api/*', apiNotFound);
