@@ -19,9 +19,6 @@ const { server: serverConfig, paths } = config;
 // Initialize Express app
 const app = express();
 
-// Connect to MongoDB
-connectDB();
-
 // Middleware
 app.use(cors({
   origin: serverConfig.isProduction ? serverConfig.clientUrl : '*',
@@ -34,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 // Log requests in development
 if (serverConfig.isDevelopment) {
   app.use((req, res, next) => {
-    console.log(`${req.method} ${req.originalUrl}`, req.body);
+    console.log(`${req.method} ${req.originalUrl}`); 
     next();
   });
 }
@@ -62,17 +59,32 @@ app.get('/', (req, res) => {
 app.use(error.notFound);
 app.use(error.errorHandler);
 
-// Start the server
-const server = app.listen(serverConfig.port, () => {
-  console.log(`Server running in ${serverConfig.nodeEnv} mode on port ${serverConfig.port}`);
-  console.log(`API: http://localhost:${serverConfig.port}/api`);
-  console.log(`Client URL: ${config.clientUrl}`);
-});
+let server; 
+
+const startServer = async () => {
+  try {
+    await connectDB(); 
+
+    server = app.listen(serverConfig.port, () => {
+      console.log(`Server running in ${serverConfig.nodeEnv} mode on port ${serverConfig.port}`);
+      console.log(`API: http://localhost:${serverConfig.port}/api`);
+      console.log(`Client URL: ${serverConfig.clientUrl}`); 
+    });
+
+  } catch (err) {
+    console.error('Failed to connect to the database or start server.', err);
+    process.exit(1); 
+  }
+};
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
-  console.error(`Error: ${err.message}`);
-  // Close server & exit process
-  server.close(() => process.exit(1));
+  console.error(`Unhandled Rejection: ${err.message}`, err);
+  if (server) {
+    server.close(() => process.exit(1));
+  } else {
+    process.exit(1);
+  }
 });
-//   .catch(err => console.error('MongoDB Connection Error:', err));
+
+startServer();

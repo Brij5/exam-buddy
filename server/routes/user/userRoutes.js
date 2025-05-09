@@ -1,3 +1,4 @@
+console.log('[DEBUG_USER_ROUTES] Top of server/routes/user/userRoutes.js'); 
 import express from 'express';
 import { 
   registerUser,

@@ -1,18 +1,28 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import User from '../models/user/User.js';
 
-dotenv.config();
+// ES Module fix for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const checkDatabase = async () => {
+// Load environment variables from the root .env file
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+// Use MONGODB_URI from environment variables, or default to exam-buddy-dev
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/exam-buddy-dev';
+
+const checkDbConnection = async () => {
   try {
     console.log('🔌 Connecting to MongoDB...');
     
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/exam-buddy', {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      family: 4
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
     });
     
     console.log('✅ MongoDB connected successfully');
@@ -46,4 +56,4 @@ const checkDatabase = async () => {
   }
 };
 
-checkDatabase();
+checkDbConnection();

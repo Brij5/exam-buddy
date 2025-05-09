@@ -3,7 +3,7 @@ import axios from 'axios';
 // Define the base URL for the API. Adjust if your backend runs on a different port/URL.
 // Consider using environment variables for this in a real application.
 // Using relative URL, assumes frontend/backend on same origin or proxy configured
-const USERS_API_URL = '/api/users'; // Base URL for user endpoints (login, profile, register)
+const USERS_API_URL = '/api/user'; // Base URL for user endpoints (login, profile, register)
 const AUTH_API_URL = '/api/auth'; // Base URL for other auth endpoints (refresh, logout - if they exist)
 
 // Auth service

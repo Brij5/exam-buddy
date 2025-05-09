@@ -1,6 +1,9 @@
+console.log('[DEBUG_EXAM_MANAGER_CONTROLLER] Top of server/controllers/examManagerController.js');
+
 import asyncHandler from '../utils/asyncHandler.js';
 import Exam from '../models/exam/Exam.js'; // Assuming Exam model is needed
 import User from '../models/user/User.js'; // Assuming User model might be needed
+console.log('[DEBUG_EXAM_MANAGER_CONTROLLER] Imports completed in examManagerController.js');
 
 // @desc    Get dashboard statistics for an Exam Manager
 // @route   GET /api/exam-manager/stats

@@ -1,31 +1,35 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import User from '../models/user/User.js';
 import ExamCategory from '../models/category/ExamCategory.js';
 import Exam from '../models/exam/Exam.js';
 
-// Load environment variables
-dotenv.config({ path: '../../.env' });
+// ES Module fix for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Default MongoDB URI
-const DEFAULT_MONGO_URI = 'mongodb://localhost:27017/exam-buddy-dev';
+// Load environment variables from root .env file
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-// Database connection
+// Database connection string - use MONGODB_URI, default to exam-buddy-dev
+const MONGODB_URI_FALLBACK = 'mongodb://localhost:27017/exam-buddy-dev';
+const dbURI = process.env.MONGODB_URI || MONGODB_URI_FALLBACK;
+
+// Helper function to connect to MongoDB
 const connectDB = async () => {
   try {
-    // Use environment variable if available, otherwise use default
-    const mongoUri = process.env.MONGODB_URI || DEFAULT_MONGO_URI;
-    
     console.log('🔌 Connecting to MongoDB...');
-    
-    await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000,
+    await mongoose.connect(dbURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Added for quicker timeout if DB not available
       socketTimeoutMS: 45000,
       family: 4,
     });
-    
-    console.log(`✅ MongoDB Connected successfully to ${mongoUri}`);
+    console.log(`✅ MongoDB Connected successfully to ${dbURI}`);
     
     // Verify the connection
     const db = mongoose.connection;
@@ -35,10 +39,10 @@ const connectDB = async () => {
     });
     
     return db;
-  } catch (err) {
-    console.error('❌ Database connection error:', err.message);
-    console.error('Full error:', err);
-    process.exit(1);
+  } catch (error) {
+    console.error(`❌ MongoDB Connection Error: ${error.message}. Ensure MongoDB is running and accessible at ${dbURI}`);
+    console.error('Full error:', error);
+    process.exit(1); // Exit if cannot connect
   }
 };
 

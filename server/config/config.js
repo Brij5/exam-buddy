@@ -8,7 +8,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+const envPath = path.resolve(__dirname, '../../.env');
+console.log(`[CONFIG_DEBUG] Attempting to load .env file from: ${envPath}`);
+dotenv.config({ path: envPath });
 
 // Define environment schema
 const envVarsSchema = Joi.object()
@@ -35,8 +37,10 @@ const { value: envVars, error } = envVarsSchema
   .validate(process.env);
 
 if (error) {
+  console.error('Detailed Config Validation Error:', JSON.stringify(error.details, null, 2));
   throw new Error(`Config validation error: ${error.message}`);
 }
+console.log('[CONFIG_DEBUG] envVars after Joi validation:', JSON.stringify(envVars, null, 2));
 
 // Server configuration
 const server = {
@@ -45,6 +49,7 @@ const server = {
   isProduction: envVars.NODE_ENV === 'production',
   isDevelopment: envVars.NODE_ENV === 'development',
   isTest: envVars.NODE_ENV === 'test',
+  clientUrl: envVars.CLIENT_URL,
 };
 
 // MongoDB configuration
@@ -81,25 +86,20 @@ const rateLimit = {
   max: Number(envVars.RATE_LIMIT_MAX),
 };
 
-// Client URL for CORS and redirects
-const clientUrl = envVars.CLIENT_URL;
-
 // CORS configuration
 const corsOptions = {
-  origin: clientUrl,
+  origin: envVars.CLIENT_URL,
   credentials: true,
   optionsSuccessStatus: 200,
 };
 
 // Export configuration
 export default {
-  env: server.env,
-  port: server.port,
+  server,
   mongo,
   jwt,
   email,
   rateLimit,
-  clientUrl,
   corsOptions,
   paths: {
     root: path.resolve(__dirname, '../..'),

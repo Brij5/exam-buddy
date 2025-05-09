@@ -1,3 +1,4 @@
+console.log('[DEBUG_HEALTH_ROUTES] Top of server/routes/health/healthRoutes.js');
 import express from 'express';
 
 const router = express.Router();

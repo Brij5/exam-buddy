@@ -70,7 +70,7 @@ const DashboardPage = () => {
 
       {/* Quick Stats Section */}
       <Grid container spacing={3} sx={{ mt: 3 }}>
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Overall Progress
@@ -88,7 +88,7 @@ const DashboardPage = () => {
             />
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Recent Performance
@@ -106,7 +106,7 @@ const DashboardPage = () => {
             />
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Study Time
@@ -192,7 +192,7 @@ const DashboardPage = () => {
         {!examsLoading && !examsError && categories && categories.length > 0 && (
           <Grid container spacing={3} sx={{ mt: 2 }}>
             {categories.map((category) => (
-              <Grid item xs={12} sm={6} md={4} key={category._id}>
+              <Grid xs={12} sm={6} md={4} key={category._id}>
                 <Card sx={{ height: '100%' }}>
                   <CardContent>
                     <Typography gutterBottom variant="h5" component="div">

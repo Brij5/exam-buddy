@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { logoutUser } from '../../store/slices/authSlice'; // Adjust if your logout action has a different name
+import { logout } from '../../store/slices/authSlice'; // Changed from logoutUser to logout
 
 const Logout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(logoutUser());
+    dispatch(logout()); // Changed from logoutUser() to logout()
     navigate('/login', { replace: true });
   }, [dispatch, navigate]);
 
