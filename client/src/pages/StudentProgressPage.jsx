@@ -67,7 +67,7 @@ const StudentProgressPage = () => {
 
       {/* Overall Progress Stats */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={4}>
+        <Grid xs={12} sm={4}>
           <Card sx={{height: '100%'}}>
             <CardContent>
               <Typography variant="h6" color="text.secondary">Exams Completed</Typography>
@@ -75,7 +75,7 @@ const StudentProgressPage = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid xs={12} sm={4}>
           <Card sx={{height: '100%'}}>
             <CardContent>
               <Typography variant="h6" color="text.secondary">Average Accuracy</Typography>
@@ -83,7 +83,7 @@ const StudentProgressPage = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid xs={12} sm={4}>
           <Card sx={{height: '100%'}}>
             <CardContent>
               <Typography variant="h6" color="text.secondary">Total Study Time</Typography>

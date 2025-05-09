@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
   Box,
   Typography,
-  Grid,
+  // Grid, 
   Card,
   CardContent,
   CircularProgress,
@@ -17,6 +17,7 @@ import {
   Paper,
   IconButton,
 } from "@mui/material";
+import Grid2 from '@mui/material/Unstable_Grid2'; 
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SchoolIcon from '@mui/icons-material/School';
@@ -69,8 +70,8 @@ const DashboardPage = () => {
       </Typography>
 
       {/* Quick Stats Section */}
-      <Grid container spacing={3} sx={{ mt: 3 }}>
-        <Grid xs={12} md={4}>
+      <Grid2 container spacing={3} sx={{ mt: 3 }}>
+        <Grid2 xs={12} md={4}>
           <Card sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Overall Progress
@@ -87,8 +88,8 @@ const DashboardPage = () => {
               sx={{ height: 10, borderRadius: 5, mt: 2 }}
             />
           </Card>
-        </Grid>
-        <Grid xs={12} md={4}>
+        </Grid2>
+        <Grid2 xs={12} md={4}>
           <Card sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Recent Performance
@@ -105,8 +106,8 @@ const DashboardPage = () => {
               sx={{ height: 10, borderRadius: 5, mt: 2 }}
             />
           </Card>
-        </Grid>
-        <Grid xs={12} md={4}>
+        </Grid2>
+        <Grid2 xs={12} md={4}>
           <Card sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Study Time
@@ -123,8 +124,8 @@ const DashboardPage = () => {
               sx={{ height: 10, borderRadius: 5, mt: 2 }}
             />
           </Card>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       {/* Recent Test Attempts */}
       <Paper sx={{ p: 2, mt: 3 }}>

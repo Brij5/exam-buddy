@@ -29,7 +29,7 @@ export const fetchStudentProgressData = createAsyncThunk(
         },
       };
       // Replace with your actual API endpoint
-      const response = await axios.get('/api/v1/progress/me', config);
+      const response = await axios.get('/api/progress/me', config);
       return response.data.data; // Assuming API returns data in { data: { recentAttempts: [], overallProgress: {} } }
     } catch (error) {
       const message = 
@@ -52,7 +52,7 @@ export const fetchAttemptDetails = createAsyncThunk(
           Authorization: `Bearer ${userInfo.token}`,
         },
       };
-      const response = await axios.get(`/api/v1/progress/attempts/${attemptId}`, config);
+      const response = await axios.get(`/api/progress/attempts/${attemptId}`, config);
       return response.data.data;
     } catch (error) {
       const message = 

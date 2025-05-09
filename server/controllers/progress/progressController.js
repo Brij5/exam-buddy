@@ -4,15 +4,86 @@ import TestAttempt from '../../models/TestAttempt.js';
 import { protect } from '../../middleware/auth/authMiddleware.js';
 
 // @desc    Get user's progress
-// @route   GET /api/progress
+// @route   GET /api/progress/me
 // @access  Private
 export const getUserProgress = asyncHandler(async (req, res) => {
-  const progress = await Progress.find({ user: req.user._id })
-    .populate('exam', 'name')
+  const userProgressDocs = await Progress.find({ user: req.user._id })
+    .populate('exam', 'name subject') // Populate exam to get name and subject
     .populate('category', 'name')
     .sort({ lastAttemptedAt: -1 });
 
-  res.json(progress);
+  if (!userProgressDocs) {
+    // Send a structured empty response if no progress found
+    return res.json({
+      data: {
+        recentAttempts: [],
+        overallProgress: {
+          averageAccuracy: 0,
+          totalStudyTime: 0,
+          examsCompleted: 0,
+          strongSubjects: [],
+          weakSubjects: [],
+        },
+      },
+    });
+  }
+
+  const recentAttempts = userProgressDocs.map(p => ({
+    _id: p.exam._id, // Using exam id for attempt identification, or p._id if progress doc is the attempt
+    examName: p.exam.name,
+    completedAt: p.lastAttemptedAt,
+    accuracy: p.accuracy,
+    score: p.correctAnswers, // Assuming score is number of correct answers
+    totalQuestions: p.totalQuestionsAttempted,
+  }));
+
+  let totalCorrectOverall = 0;
+  let totalAttemptedOverall = 0;
+  let totalStudyTimeOverallSeconds = 0;
+  const subjectStats = {};
+
+  userProgressDocs.forEach(p => {
+    totalCorrectOverall += p.correctAnswers;
+    totalAttemptedOverall += p.totalQuestionsAttempted;
+    totalStudyTimeOverallSeconds += p.timeTaken || 0; // timeTaken is in seconds
+
+    const subjectName = p.exam.subject || p.subject; // Prefer exam.subject if available
+    if (subjectName) {
+      if (!subjectStats[subjectName]) {
+        subjectStats[subjectName] = { totalCorrect: 0, totalAttempted: 0, count: 0 };
+      }
+      subjectStats[subjectName].totalCorrect += p.correctAnswers;
+      subjectStats[subjectName].totalAttempted += p.totalQuestionsAttempted;
+      subjectStats[subjectName].count++;
+    }
+  });
+
+  const averageAccuracyOverall = totalAttemptedOverall > 0 ? (totalCorrectOverall / totalAttemptedOverall) * 100 : 0;
+  const examsCompletedOverall = userProgressDocs.length; // Each doc is progress for one exam
+
+  const subjectPerformance = Object.entries(subjectStats).map(([subject, stats]) => ({
+    subject,
+    accuracy: stats.totalAttempted > 0 ? (stats.totalCorrect / stats.totalAttempted) * 100 : 0,
+  }));
+
+  subjectPerformance.sort((a, b) => b.accuracy - a.accuracy);
+  const strongSubjectsOverall = subjectPerformance.slice(0, 3).filter(s => s.accuracy >= 70); // Top 3, min 70% accuracy
+  const weakSubjectsOverall = subjectPerformance.slice(-3).filter(s => s.accuracy < 70).reverse(); // Bottom 3, less than 70% accuracy
+  
+  const overallProgress = {
+    averageAccuracy: parseFloat(averageAccuracyOverall.toFixed(2)),
+    totalStudyTime: Math.round(totalStudyTimeOverallSeconds / 60), // Convert to minutes
+    examsCompleted: examsCompletedOverall,
+    strongSubjects: strongSubjectsOverall,
+    weakSubjects: weakSubjectsOverall,
+  };
+
+  res.json({
+    data: {
+      recentAttempts,
+      overallProgress,
+    },
+  });
 });
 
 // @desc    Get progress by exam

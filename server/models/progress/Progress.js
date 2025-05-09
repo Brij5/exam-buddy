@@ -36,6 +36,10 @@ const progressSchema = new mongoose.Schema({
     type: Number, // in seconds
     default: 0
   },
+  timeTaken: { // Total time spent on the exam, in seconds
+    type: Number,
+    default: 0
+  },
   lastAttemptedAt: {
     type: Date,
     default: Date.now
