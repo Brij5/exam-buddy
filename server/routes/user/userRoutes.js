@@ -1,16 +1,26 @@
+console.log('[DEBUG_USER_ROUTES] Top of server/routes/user/userRoutes.js'); 
 import express from 'express';
-import { getUserProfile, updateUserProfile } from '../controllers/userController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { 
+  registerUser,
+  loginUser,
+  forgotPassword,
+  resetPassword,
+  getUserProfile, 
+  updateUserProfile 
+} from '../../controllers/userController.js';
+import { protect } from '../../middleware/auth/authMiddleware.js';
 
 const router = express.Router();
 
-// Placeholder route - Add actual user routes later
-router.get('/profile', (req, res) => {
-  res.send('User Profile Endpoint - Placeholder');
-});
+// Public Routes
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 
-// router.route('/profile')
-//   .get(protect, getUserProfile)       // Get user profile (needs auth)
-//   .put(protect, updateUserProfile);   // Update user profile (needs auth)
+// Protected Routes
+router.route('/profile')
+  .get(protect, getUserProfile)       // Get user profile (needs auth)
+  .put(protect, updateUserProfile);   // Update user profile (needs auth)
 
 export default router;

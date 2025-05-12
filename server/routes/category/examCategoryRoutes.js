@@ -7,8 +7,8 @@ import {
   getCategoryById,
   updateCategory,
   deleteCategory,
-} from '../controllers/examCategoryController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+} from '../../controllers/category/examCategoryController.js';
+import { protect, admin } from '../../middleware/auth/authMiddleware.js';
 
 const router = express.Router();
 

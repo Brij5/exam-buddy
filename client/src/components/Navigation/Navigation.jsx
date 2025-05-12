@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton, Typography, AppBar, Toolbar, Button } from '@mui/material';
+import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton, Typography, AppBar, Toolbar, Button, ListItemButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import HomeIcon from '@mui/icons-material/Home';
@@ -32,32 +32,32 @@ const Navigation = ({ menuItems = [] }) => {
       <Toolbar />
       <List>
         {menuItems.map((item, index) => (
-          <ListItem
-            key={index}
-            button
-            component={RouterLink}
-            to={item.path}
-            disablePadding
-          >
-            <ListItemIcon>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText primary={item.text} />
+          <ListItem key={index} disablePadding>
+            <ListItemButton component={RouterLink} to={item.path}>
+              <ListItemIcon>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
           </ListItem>
         ))}
 
-        <ListItem button="true" component={RouterLink} to="/" disablePadding>
-          <ListItemIcon>
-            <HomeIcon />
-          </ListItemIcon>
-          <ListItemText primary="Home" />
+        <ListItem disablePadding>
+           <ListItemButton component={RouterLink} to="/">
+              <ListItemIcon>
+                <HomeIcon />
+              </ListItemIcon>
+              <ListItemText primary="Home" />
+           </ListItemButton>
         </ListItem>
 
-        <ListItem button="true" component={RouterLink} to="/profile" disablePadding>
-          <ListItemIcon>
-            <PersonIcon />
-          </ListItemIcon>
-          <ListItemText primary="Profile" />
+        <ListItem disablePadding>
+           <ListItemButton component={RouterLink} to="/profile">
+              <ListItemIcon>
+                <PersonIcon />
+              </ListItemIcon>
+              <ListItemText primary="Profile" />
+           </ListItemButton>
         </ListItem>
       </List>
     </div>

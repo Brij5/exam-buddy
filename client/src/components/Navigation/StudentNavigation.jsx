@@ -2,7 +2,10 @@ import React from 'react';
 import { 
   Dashboard as DashboardIcon, 
   School as SchoolIcon, 
-  Assessment as AssessmentIcon
+  Assessment as AssessmentIcon,
+  Person as PersonIcon, 
+  Settings as SettingsIcon, 
+  ExitToApp as ExitToAppIcon 
 } from '@mui/icons-material';
 import Navigation from './Navigation';
 
@@ -11,17 +14,32 @@ const StudentNavigation = ({ children }) => {
     {
       text: 'Dashboard',
       icon: <DashboardIcon />,
-      path: '/dashboard'
+      path: '/dashboard' 
     },
     {
       text: 'Exams',
       icon: <SchoolIcon />,
-      path: '/exams'
+      path: '/exams' 
     },
     {
-      text: 'Progress',
+      text: 'My Progress',
       icon: <AssessmentIcon />,
-      path: '/progress'
+      path: '/progress' 
+    },
+    {
+      text: 'Profile',
+      icon: <PersonIcon />,
+      path: '/profile' 
+    },
+    {
+      text: 'Settings',
+      icon: <SettingsIcon />,
+      path: '/settings'
+    },
+    {
+      text: 'Logout',
+      icon: <ExitToAppIcon />,
+      path: '/logout' 
     }
   ];
 

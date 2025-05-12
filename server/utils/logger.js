@@ -1,5 +1,11 @@
 import winston from 'winston';
 import config from '../config/config.js';
+import { existsSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const { combine, timestamp, printf, colorize, json } = winston.format;
 
@@ -48,12 +54,9 @@ if (config.env !== 'production') {
 
 // Create logs directory if it doesn't exist
 if (process.env.NODE_ENV !== 'test') {
-  const fs = require('fs');
-  const path = require('path');
   const logDir = 'logs';
-
-  if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir);
+  if (!existsSync(logDir)) {
+    mkdirSync(logDir, { recursive: true });
   }
 }
 

@@ -1,135 +1,153 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { login } from '../store/slices/authSlice';
-import { Container, Typography, Alert, CircularProgress, Box } from '@mui/material';
-import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+import {
+  Container,
+  Typography,
+  Alert,
+  CircularProgress,
+  Box,
+  TextField,
+  Button,
+  Link,
+  Grid,
+  Avatar
+} from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+
+// Validation Schema
+const schema = yup.object().shape({
+  email: yup.string().email('Invalid email format').required('Email is required'),
+  password: yup.string().required('Password is required'),
+});
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const auth = useSelector((state) => state.auth);
   const { loading, error, userInfo } = auth;
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { email: '', password: '' },
+  });
+
   useEffect(() => {
     if (userInfo) {
+      // Redirect based on role after login
       const role = userInfo.role;
+      // TODO: Ensure these routes exist and are protected appropriately
       const redirectPath = role === 'Admin' 
         ? '/admin/dashboard'
-        : role === 'ExamManager'
+        : role === 'ExamManager' // Assuming this role exists
           ? '/exam-manager/dashboard'
           : '/dashboard';
       navigate(redirectPath, { replace: true });
     }
   }, [navigate, userInfo]);
 
-  const submitHandler = (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      alert('Please fill in all fields');
-      return;
-    }
-    
-    // Create credentials object
-    const credentials = {
-      email: email,
-      password: password
-    };
-    
-    dispatch(login(credentials));
+  const onSubmit = (data) => {
+    // Data contains validated { email, password }
+    dispatch(login(data));
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Sign In to Exam Buddy
-          </Typography>
+    // AuthLayout provides the centering Container
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: '100%', // Ensure Box takes width within the Container
+      }}
+    >
+      <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+        <LockOutlinedIcon />
+      </Avatar>
+      <Typography component="h1" variant="h5">
+        Sign In
+      </Typography>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+      {/* Display API error from Redux store */} 
+      {error && (
+        <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+          {error} 
+        </Alert>
+      )}
 
-          {loading ? (
-            <CircularProgress />
-          ) : (
-            <Container maxWidth="md" sx={{ py: 4 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                  Welcome Back
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  Sign in to Exam Buddy
-                </Typography>
-                <Paper sx={{ p: 4, width: '100%', maxWidth: 400 }}>
-                  <Typography variant="h5" component="h2" gutterBottom>
-                    Sign In
-                  </Typography>
-                  {error && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                      {error}
-                    </Alert>
-                  )}
-                  <form onSubmit={submitHandler}>
-                    <TextField
-                      fullWidth
-                      label="Email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      margin="normal"
-                      required
-                      autoFocus
-                    />
-                    <TextField
-                      fullWidth
-                      label="Password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      margin="normal"
-                      required
-                    />
-                    <Button
-                      type="submit"
-                      fullWidth
-                      variant="contained"
-                      sx={{ mt: 3, mb: 2 }}
-                    >
-                      Sign In
-                    </Button>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                      <Link href="#" variant="body2">
-                        Forgot password?
-                      </Link>
-                      <Link href="/register" variant="body2">
-                        Don't have an account? Sign Up
-                      </Link>
-                    </Box>
-                  </form>
-                </Paper>
-              </Box>
-            </Container>
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1, width: '100%' }}>
+        <Controller
+          name="email"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              autoComplete="email"
+              autoFocus
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              disabled={loading}
+            />
           )}
-        </Paper>
+        />
+        <Controller
+          name="password"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              margin="normal"
+              required
+              fullWidth
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              disabled={loading}
+            />
+          )}
+        />
+        {/* Add Remember me checkbox if needed */}
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          sx={{ mt: 3, mb: 2 }}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Sign In'}
+        </Button>
+        <Grid container spacing={2}>
+          <Grid>
+            {/* Point to the correct route */}
+            <Link component={RouterLink} to="/forgot-password" variant="body2">
+              Forgot password?
+            </Link>
+          </Grid>
+          <Grid>
+            <Link component={RouterLink} to="/register" variant="body2">
+              {"Don't have an account? Sign Up"}
+            </Link>
+          </Grid>
+        </Grid>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

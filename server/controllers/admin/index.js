@@ -1,4 +1,6 @@
-import adminController from './adminController.js';
+import * as adminFunctions from './adminController.js';
+
+const adminController = { ...adminFunctions };
 
 export { adminController };
 export default adminController;

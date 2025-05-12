@@ -6,14 +6,14 @@ import {
   getProgressBySubject,
   updateProgress,
   getUserAchievements
-} from '../controllers/progressController.js';
-import { protect } from '../middleware/authMiddleware.js';
+} from '../../controllers/progress/progressController.js';
+import { protect } from '../../middleware/auth/authMiddleware.js';
 
 const router = express.Router();
 
 // Protected routes (User only)
 router
-  .route('/')
+  .route('/me')
   .get(protect, getUserProgress);
 
 router

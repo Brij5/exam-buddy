@@ -1,7 +1,7 @@
 // Export all middleware from a single entry point
-import * as auth from './auth';
-import * as error from './error';
-import * as validation from './validation';
+import * as auth from './auth/index.js';
+import * as error from './error/index.js';
+import * as validation from './validation/index.js';
 
 // Export all middleware as named exports
 export { auth, error, validation };

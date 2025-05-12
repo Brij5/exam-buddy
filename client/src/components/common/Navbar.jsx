@@ -196,7 +196,6 @@ function Navbar() {
               <Button
                 color="inherit"
                 onClick={handleLogout}
-                startIcon={<AccountCircle />}
               >
                 Logout
               </Button>
@@ -263,7 +262,7 @@ function Navbar() {
           )}
         </Toolbar>
       </AppBar>
-      <Box component="nav">
+      <nav> {/* Changed Box to nav for semantics */} 
         <Drawer
           container={container}
           variant="temporary"
@@ -279,7 +278,7 @@ function Navbar() {
         >
           {drawer}
         </Drawer>
-      </Box>
+      </nav>
     </>
   );
 }

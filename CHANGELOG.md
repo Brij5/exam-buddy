@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database connection utility
 - Server startup script
 - API documentation setup
+- Stub implementations for `getAllUsers`, `getUserById`, `updateUser`, and `deleteUser` in `server/controllers/admin/adminController.js` to facilitate admin route functionality.
 
 ### Changed
 - Updated project dependencies
@@ -40,12 +41,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned up `docker/` directory, removing potentially redundant files/folders.
 - Added a Documentation section to `README.md` linking to files within `docs/`.
 - Added Frontend Implementation Plan section to `docs/DEVELOPMENT_LOG.md`.
+- Refactored frontend routing: Centralized routes in `routes/index.jsx`, simplified `App.jsx`, created placeholder layout components.
+- Refactored RegisterPage to use Material UI components.
+- Improved server startup stability by systematically debugging module import sequence.
 
 ### Fixed
 - Fixed environment variable loading
 - Resolved circular dependencies
 - Fixed JWT token verification
 - Fixed error handling in async routes
+- Input validation edge cases
+- Database connection issues
+- Resolved server startup crashes caused by missing methods in `adminController` and incorrect named import for `logger` in `server/controllers/admin/adminController.js`.
+- **Server Startup:** Resolved a critical bug preventing the backend server from starting. The issue was traced to an incorrect configuration destructuring in `server/index.js` where `serverConfig` was `undefined` due to a mismatch in how `server/config/config.js` exported its server-related settings. The `config.js` was updated to export a dedicated `server` object, and `server/index.js` was confirmed to correctly destructure it, enabling successful CORS middleware initialization and subsequent server startup.
 
 ### Removed
 - Deleted redundant root `Dockerfile`.
@@ -119,7 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Input validation edge cases
 - Database connection issues
 
-[Unreleased]: https://github.com/yourusername/exam-buddy/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/yourusername/exam-buddy/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/yourusername/exam-buddy/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/yourusername/exam-buddy/releases/tag/v0.1.0
+[Unreleased]: https://github.com/brij5/exam-buddy/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/brij5/exam-buddy/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/brij5/exam-buddy/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/brij5/exam-buddy/releases/tag/v0.1.0

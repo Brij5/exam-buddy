@@ -1,7 +1,8 @@
 import asyncHandler from '../utils/asyncHandler.js'; // Utility to handle async errors
 import mongoose from 'mongoose';  
-import Exam from '../models/Exam.js';
-import { protect, admin, examManager } from '../middleware/authMiddleware.js';
+import Exam from '../models/exam/Exam.js';
+import ExamCategory from '../models/category/ExamCategory.js';
+import { protect, admin, examManager } from '../middleware/auth/authMiddleware.js';
 
 // @desc    Get all exams
 // @route   GET /api/exams

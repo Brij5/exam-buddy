@@ -1,13 +1,35 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Typography, Button, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const SplashScreen = () => {
   const navigate = useNavigate();
+  const { userInfo } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (userInfo) {
+      switch (userInfo.role) {
+        case 'Admin':
+          navigate('/admin/dashboard', { replace: true });
+          break;
+        case 'ExamManager':
+          navigate('/exam-manager/dashboard', { replace: true });
+          break;
+        default: 
+          navigate('/dashboard', { replace: true });
+          break;
+      }
+    } 
+  }, [userInfo, navigate]);
 
   const handleGetStarted = () => {
     navigate('/login');
   };
+
+  if (userInfo) {
+    return null;
+  }
 
   return (
     <Container component="main" maxWidth="md" sx={{ mt: 8, mb: 4 }}>

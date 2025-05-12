@@ -44,34 +44,11 @@ const ProtectedRoute = ({ children, adminRequired = false, examManagerRequired =
         <Button
           variant="contained"
           color="primary"
-          component="RouterLink"
-          to="/dashboard"
+          onClick={() => navigate('/dashboard')}
           sx={{ mt: 2 }}
         >
           Go to Dashboard
         </Button>
-      </Box>
-    );
-  }
-
-  if (examManagerRequired && userInfo.role !== 'ExamManager') {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 'calc(100vh - 64px)',
-          p: 3,
-        }}
-      >
-        <Typography variant="h5" gutterBottom>
-          Access Denied
-        </Typography>
-        <Typography variant="body1" color="textSecondary" align="center">
-          You do not have permission to access this page. Only administrators can view this content.
-        </Typography>
       </Box>
     );
   }
@@ -94,8 +71,7 @@ const ProtectedRoute = ({ children, adminRequired = false, examManagerRequired =
         <Button
           variant="contained"
           color="primary"
-          component="RouterLink"
-          to="/dashboard"
+          onClick={() => navigate('/dashboard')}
           sx={{ mt: 2 }}
         >
           Go to Dashboard

@@ -1,5 +1,5 @@
-import ExamCategory from '../models/ExamCategory.js';
-import asyncHandler from '../utils/asyncHandler.js'; // Utility to handle async errors
+import ExamCategory from '../../models/category/ExamCategory.js'; // Corrected model path to include 'category' subdirectory
+import asyncHandler from '../../utils/asyncHandler.js'; // Path for asyncHandler should be correct from previous edit
 
 /**
  * @desc    Create a new exam category
