@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link as RouterLink, useParams } from 'react-router-dom';
+import { createSelector } from 'reselect';
 import {
   Box,
   Typography,
@@ -18,21 +19,17 @@ import {
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { fetchExamsByCategory, fetchCategories } from '../store/slices/examSlice';
 
-const ExamsByCategoryPage = () => {
-  const { categoryId } = useParams();
-  const dispatch = useDispatch();
+// Input selectors
+const selectExamsByCategoryState = (state) => state.exams.examsByCategory;
+const selectAllCategoriesState = (state) => state.exams.categories;
+const selectExamsLoadingState = (state) => state.exams.loading;
+const selectCategoryIdFromParams = (state, categoryId) => categoryId;
 
-  const { 
-    exams, 
-    categoryName, 
-    loading, 
-    error, 
-    categoriesLoading, 
-    areCategoriesFetched,
-    targetCategory // Added to check if the specific category is loaded
-  } = useSelector((state) => {
-    const categoryExamsData = state.exams.examsByCategory[categoryId];
-    const allCategories = state.exams.categories;
+// Memoized selector
+const selectExamsPageData = createSelector(
+  [selectExamsByCategoryState, selectAllCategoriesState, selectExamsLoadingState, selectCategoryIdFromParams],
+  (examsByCategory, allCategories, categoriesLoading, categoryId) => {
+    const categoryExamsData = examsByCategory[categoryId];
     const selectedCategory = allCategories?.find(cat => cat._id === categoryId);
 
     return {
@@ -40,11 +37,27 @@ const ExamsByCategoryPage = () => {
       categoryName: selectedCategory?.name || 'Category',
       loading: categoryExamsData?.status === 'loading',
       error: categoryExamsData?.error,
-      categoriesLoading: state.exams.loading, 
+      categoriesLoading: categoriesLoading, 
       areCategoriesFetched: allCategories && allCategories.length > 0,
-      targetCategory: selectedCategory // Expose the found category object
+      targetCategory: selectedCategory
     };
-  });
+  }
+);
+
+const ExamsByCategoryPage = () => {
+  const { categoryId } = useParams();
+  const dispatch = useDispatch();
+
+  // Use the memoized selector
+  const { 
+    exams, 
+    categoryName, 
+    loading, 
+    error, 
+    categoriesLoading, 
+    areCategoriesFetched,
+    targetCategory
+  } = useSelector((state) => selectExamsPageData(state, categoryId));
 
   useEffect(() => {
     if (categoryId) {

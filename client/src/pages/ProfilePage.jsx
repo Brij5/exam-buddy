@@ -61,7 +61,7 @@ const ProfilePage = () => {
       <Paper elevation={3} sx={{ p: 3 }}>
         <Box component="form" onSubmit={submitHandler} noValidate>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 id="name"
@@ -73,7 +73,7 @@ const ProfilePage = () => {
                 variant="filled" // Or 'outlined'
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 id="email"
@@ -86,7 +86,7 @@ const ProfilePage = () => {
                 variant="filled"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 id="role"
@@ -98,7 +98,7 @@ const ProfilePage = () => {
                 variant="filled"
               />
             </Grid>
-            <Grid item xs={12} sx={{ mt: 2, textAlign: 'right' }}>
+            <Grid xs={12} sx={{ mt: 2, textAlign: 'right' }}>
               <Button type="submit" variant="contained" disabled>
                 Update Profile (Coming Soon)
               </Button>
