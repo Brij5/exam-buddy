@@ -26,7 +26,7 @@ const testLogin = async (user) => {
   console.log(`\n🔐 Testing login for ${user.role} (${user.email})...`);
   
   try {
-    const response = await axios.post('http://localhost:5001/api/users/login', {
+    const response = await axios.post('http://localhost:5001/api/user/login', {
       email: user.email,
       password: user.password
     });

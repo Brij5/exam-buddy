@@ -13,7 +13,7 @@ const router = express.Router();
 
 // Protected routes (User only)
 router
-  .route('/')
+  .route('/me')
   .get(protect, getUserProgress);
 
 router

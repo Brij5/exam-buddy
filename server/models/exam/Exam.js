@@ -1,3 +1,4 @@
+console.log('[DEBUG_EXAM_MODEL] Top of server/models/exam/Exam.js');
 import mongoose from 'mongoose';
 
 const examSchema = new mongoose.Schema(
@@ -70,5 +71,6 @@ examSchema.pre(/^find/, function (next) {
 });
 
 const Exam = mongoose.model('Exam', examSchema);
+console.log('[DEBUG_EXAM_MODEL] Successfully compiled Exam model');
 
 export default Exam;

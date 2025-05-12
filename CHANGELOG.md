@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Input validation edge cases
 - Database connection issues
 - Resolved server startup crashes caused by missing methods in `adminController` and incorrect named import for `logger` in `server/controllers/admin/adminController.js`.
+- **Server Startup:** Resolved a critical bug preventing the backend server from starting. The issue was traced to an incorrect configuration destructuring in `server/index.js` where `serverConfig` was `undefined` due to a mismatch in how `server/config/config.js` exported its server-related settings. The `config.js` was updated to export a dedicated `server` object, and `server/index.js` was confirmed to correctly destructure it, enabling successful CORS middleware initialization and subsequent server startup.
 
 ### Removed
 - Deleted redundant root `Dockerfile`.
@@ -126,7 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Input validation edge cases
 - Database connection issues
 
-[Unreleased]: https://github.com/yourusername/exam-buddy/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/yourusername/exam-buddy/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/yourusername/exam-buddy/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/yourusername/exam-buddy/releases/tag/v0.1.0
+[Unreleased]: https://github.com/brij5/exam-buddy/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/brij5/exam-buddy/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/brij5/exam-buddy/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/brij5/exam-buddy/releases/tag/v0.1.0

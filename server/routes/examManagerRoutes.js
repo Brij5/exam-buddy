@@ -1,3 +1,4 @@
+console.log('[DEBUG_EXAM_MANAGER_ROUTES] Top of server/routes/examManagerRoutes.js'); // Add this line
 import express from 'express';
 import {
   getExamManagerStats,
@@ -5,6 +6,7 @@ import {
   getManagedExams,
 } from '../controllers/examManagerController.js'; // Adjusted path for controllers
 import { protect, authorize } from '../middleware/auth/authMiddleware.js'; // Corrected path for middleware
+console.log('[DEBUG_EXAM_MANAGER_ROUTES] Imports completed in examManagerRoutes.js');
 
 const router = express.Router();
 

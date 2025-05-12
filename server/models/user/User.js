@@ -1,3 +1,5 @@
+console.log('[DEBUG_USER_MODEL] Top of server/models/user/User.js');
+
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -135,5 +137,6 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 };
 
 const User = mongoose.model('User', userSchema);
+console.log('[DEBUG_USER_MODEL] Successfully compiled User model');
 
 export default User;

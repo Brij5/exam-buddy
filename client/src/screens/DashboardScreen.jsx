@@ -1,87 +1,65 @@
-import CustomButton from "../components/CustomButton";
-import React, { useState, useEffect } from 'react';
-import { Box, List, ListItem, ListItemText, Typography, Paper } from '@mui/material';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+import { Box, Typography, CircularProgress } from '@mui/material';
 import StudentNavigation from '../components/Navigation/StudentNavigation';
 import { styled } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import StudentDashboardPage from '../pages/StudentDashboardPage';
+import AdminDashboardScreen from './AdminDashboardScreen'; // Assuming this component exists
+// import ExamManagerDashboardScreen from './ExamManagerDashboardScreen'; // Placeholder for Exam Manager
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  margin: theme.spacing(2),
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
-  },
+const StyledScreenContainer = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(0),
+  margin: theme.spacing(0),
 }));
 
-// Type definition for Exam object
-const Exam = {
-  id: '',
-  name: '',
-  description: '',
-  duration: '',
-  totalQuestions: 0,
-  completed: false
-};
-
 const DashboardScreen = () => {
-  const [exams, setExams] = useState([]);
-  const navigate = useNavigate();
+  const { userInfo, loading, error } = useSelector((state) => state.auth);
 
-  useEffect(() => {
-    // Initialize with sample exams
-    const sampleExams = [
-      {
-        id: 1,
-        name: 'Mathematics Test',
-        description: 'Basic mathematics concepts',
-        duration: '60 minutes',
-        totalQuestions: 50,
-        completed: false
-      },
-      {
-        id: 2,
-        name: 'Science Quiz',
-        description: 'General science knowledge',
-        duration: '45 minutes',
-        totalQuestions: 30,
-        completed: true
-      }
-    ];
-    setExams(sampleExams);
-  }, []);
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const handleStartExam = (examId) => {
-    navigate(`/mock-test/${examId}`);
-  };
+  if (error) { // Handle potential auth errors during loading
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <Typography color="error">Error loading user data: {typeof error === 'object' ? JSON.stringify(error) : error}</Typography>
+            <Typography>Please try logging in again.</Typography>
+            {/* Optionally provide a button to go to login */}
+        </Box>
+    );
+  }
 
-  return (
-    <StudentNavigation>
-      <StyledPaper>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Available Exams
-        </Typography>
-        <List>
-          {exams.map((exam) => (
-            <ListItem
-              key={exam.id}
-              button="true"
-              onClick={() => handleStartExam(exam.id)}
-            >
-              <ListItemText
-                primary={exam.name}
-                secondary={`${exam.description} - ${exam.duration} (${exam.totalQuestions} questions)`}
-              />
-              {exam.completed && (
-                <Typography color="primary" variant="body2">
-                  Completed
-                </Typography>
-              )}
-            </ListItem>
-          ))}
-        </List>
-      </StyledPaper>
-    </StudentNavigation>
-  );
+  if (!userInfo) {
+    // If no userInfo and not loading, redirect to login
+    return <Navigate to="/login" replace />;
+  }
+
+  // Render dashboard based on user role
+  switch (userInfo.role) {
+    case 'Admin':
+      return <AdminDashboardScreen />;
+    case 'Student': // Assuming 'Student' is the role name
+      return (
+        <StudentNavigation>
+          <StyledScreenContainer>
+            <StudentDashboardPage />
+          </StyledScreenContainer>
+        </StudentNavigation>
+      );
+    // case 'ExamManager':
+    //   return <ExamManagerDashboardScreen />;
+    default:
+      // Fallback for unknown roles or if role is not defined
+      // You might want to log this situation or show a generic dashboard/error
+      console.warn(`Unknown or undefined user role: ${userInfo.role}`);
+      // For now, redirecting to login or showing a generic student dashboard as a fallback
+      return <Navigate to="/login" replace />; // Or <StudentDashboardPage /> if that's a safer default
+  }
 };
 
 export default DashboardScreen;
